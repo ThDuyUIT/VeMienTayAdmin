@@ -4,4 +4,5 @@ class VehicleRowData {
   late String capacity;
   late String totalRoutes;
   late String urlImage;
+  late String currentLocation;
 }

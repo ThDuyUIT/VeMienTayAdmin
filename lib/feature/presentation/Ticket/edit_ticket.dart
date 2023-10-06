@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:booking_transition_admin/basic_component/circleprogressbar.dart';
 import 'package:booking_transition_admin/basic_component/mycupertinodialog.dart';
 import 'package:booking_transition_admin/basic_component/snackbar.dart';
@@ -15,6 +17,7 @@ import 'package:booking_transition_admin/feature/services/insert_data.dart';
 import 'package:booking_transition_admin/untils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class EditTicket extends StatefulWidget {
   late TicketRowData ticket;
@@ -48,7 +51,7 @@ class StateEditTicket extends State<EditTicket> {
 
   late int methodPayment;
   late int statusPayment;
-  late int statusTicket;
+  static late int statusTicket;
   late double totalPrices;
 
   final _removeController = RemoveController();
@@ -56,9 +59,20 @@ class StateEditTicket extends State<EditTicket> {
 
   final _appSnackbar = AppSnackbar();
 
-  static List<String> selectedSeats = [];
+  static late List<String> selectedSeats;
+
+  late String nameStatusTicket;
   @override
   void initState() {
+    if (widget.bookedvehicle.capacity == 16) {
+      StateList16Seats.selectedindex = widget.editedSeat;
+      selectedSeats = StateList16Seats.selectedindex;
+    } else {
+      StateList29Seats.selectedindex = widget.editedSeat;
+      selectedSeats = StateList29Seats.selectedindex;
+    }
+
+    //totalPrices = widget.ticket.prices
     _nameVehicleEditingController =
         TextEditingController(text: widget.bookedvehicle.name);
     _idVehicleEditingController =
@@ -68,11 +82,21 @@ class StateEditTicket extends State<EditTicket> {
     _nameClientEditingController =
         TextEditingController(text: widget.ticket.name);
     _phoneEditingController = TextEditingController(text: widget.ticket.phone);
-    _totalPricesEditingController = TextEditingController();
+    _totalPricesEditingController =
+        TextEditingController(text: widget.ticket.prices);
 
     methodPayment = int.parse(widget.ticket.methodPayment);
     statusPayment = int.parse(widget.ticket.statusPayment);
     statusTicket = int.parse(widget.ticket.statusTicket);
+    StateList16Seats.statusTicket = statusTicket;
+    StateList29Seats.statusTicket = statusTicket;
+    if (statusTicket == 0) {
+      nameStatusTicket = 'Upcoming';
+    } else if (statusTicket == 1) {
+      nameStatusTicket = 'Complete';
+    } else {
+      nameStatusTicket = 'Cancel';
+    }
     super.initState();
   }
 
@@ -133,6 +157,44 @@ class StateEditTicket extends State<EditTicket> {
                     color: AppColor.mainColor,
                     fontSize: 25),
               ),
+              const SizedBox(
+                width: 5,
+              ),
+              Text(
+                '($nameStatusTicket)',
+                style: TextStyle(
+                    //fontFamily: 'Roboto bold',
+                    color: statusTicket == 0
+                        ? Colors.yellow
+                        : statusTicket == 1
+                            ? Colors.greenAccent
+                            : Colors.redAccent,
+                    fontSize: 20),
+              ),
+              Expanded(
+                child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                        onPressed: () async {
+                          bool shouldVerify =
+                              await _cupertinoDialog.createCupertinoDialog(
+                                  AppColor.mainColor,
+                                  'Cancel',
+                                  'Cancel this ticket?',
+                                  context);
+                          if (shouldVerify) {
+                            statusTicket = 2;
+                            setState(() {
+                              nameStatusTicket = 'Cancel';
+                            });
+                          }
+                        },
+                        child: Text(
+                          'Cancel',
+                          style:
+                              TextStyle(fontSize: 20, color: Colors.redAccent),
+                        ))),
+              )
             ]),
             const SizedBox(
               height: 10,
@@ -515,7 +577,7 @@ class StateEditTicket extends State<EditTicket> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'Total prices',
+                                      'Total prices(VND)',
                                       style: TextStyle(
                                           fontFamily: 'Roboto bold',
                                           fontSize: 18,
@@ -525,7 +587,10 @@ class StateEditTicket extends State<EditTicket> {
                                       readOnly: true,
                                       controller: _totalPricesEditingController,
                                       decoration: InputDecoration(
-                                        hintText: widget.ticket.prices,
+                                        // hintText: NumberFormat.decimalPattern()
+                                        //     .format(
+                                        //         int.parse(widget.ticket.prices))
+                                        //     .toString(),
                                         hintStyle: TextStyle(
                                             color: AppColor.mainColor),
                                         //icon: const Icon(Icons.account_circle_outlined),
@@ -547,9 +612,9 @@ class StateEditTicket extends State<EditTicket> {
                                   ],
                                 ),
                               )),
-                              const SizedBox(
-                                height: 10,
-                              ),
+                              // const SizedBox(
+                              //   height: 10,
+                              // ),
                               Container(
                                   width: double.infinity,
                                   child: Column(
@@ -564,7 +629,15 @@ class StateEditTicket extends State<EditTicket> {
                                             color: Colors.grey),
                                       ),
                                       Container(
+                                        // padding:
+                                        //     EdgeInsets.only(top: 5, bottom: 5),
                                         width: double.infinity,
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(4)),
+                                            border: Border.all(
+                                                width: 2,
+                                                color: AppColor.mainColor)),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
@@ -585,6 +658,24 @@ class StateEditTicket extends State<EditTicket> {
                                                         groupValue:
                                                             methodPayment,
                                                         onChanged: (value) {
+                                                          if (statusTicket !=
+                                                              0) {
+                                                            _appSnackbar
+                                                                .buildSnackbar(
+                                                                    context,
+                                                                    "The ticket was finished!");
+                                                            return;
+                                                          }
+
+                                                          if (widget.ticket
+                                                                  .statusPayment ==
+                                                              '1') {
+                                                            _appSnackbar
+                                                                .buildSnackbar(
+                                                                    context,
+                                                                    "The ticket is paid. Can\'t update!");
+                                                            return;
+                                                          }
                                                           setState(() {
                                                             methodPayment =
                                                                 value!;
@@ -615,6 +706,23 @@ class StateEditTicket extends State<EditTicket> {
                                                       value: 2,
                                                       groupValue: methodPayment,
                                                       onChanged: (value) {
+                                                        if (statusTicket != 0) {
+                                                          _appSnackbar
+                                                              .buildSnackbar(
+                                                                  context,
+                                                                  "The ticket was finished!");
+                                                          return;
+                                                        }
+
+                                                        if (widget.ticket
+                                                                .statusPayment ==
+                                                            '1') {
+                                                          _appSnackbar
+                                                              .buildSnackbar(
+                                                                  context,
+                                                                  "The ticket is paid. Can\'t update!");
+                                                          return;
+                                                        }
                                                         setState(() {
                                                           methodPayment =
                                                               value!;
@@ -668,6 +776,7 @@ class StateEditTicket extends State<EditTicket> {
                                     ],
                                   )),
                               Container(
+                                  padding: EdgeInsets.only(top: 8),
                                   width: double.infinity,
                                   child: Column(
                                     crossAxisAlignment:
@@ -681,6 +790,14 @@ class StateEditTicket extends State<EditTicket> {
                                             color: Colors.grey),
                                       ),
                                       Container(
+                                        // padding:
+                                        //     EdgeInsets.only(top: 5, bottom: 5),
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(4)),
+                                            border: Border.all(
+                                                width: 2,
+                                                color: AppColor.mainColor)),
                                         width: double.infinity,
                                         child: Row(
                                           mainAxisAlignment:
@@ -702,6 +819,24 @@ class StateEditTicket extends State<EditTicket> {
                                                         groupValue:
                                                             statusPayment,
                                                         onChanged: (value) {
+                                                          if (statusTicket !=
+                                                              0) {
+                                                            _appSnackbar
+                                                                .buildSnackbar(
+                                                                    context,
+                                                                    "The ticket was finished!");
+                                                            return;
+                                                          }
+
+                                                          if (widget.ticket
+                                                                  .statusPayment ==
+                                                              '1') {
+                                                            _appSnackbar
+                                                                .buildSnackbar(
+                                                                    context,
+                                                                    "The ticket is paid. Can\'t update!");
+                                                            return;
+                                                          }
                                                           setState(() {
                                                             statusPayment =
                                                                 value!;
@@ -732,6 +867,14 @@ class StateEditTicket extends State<EditTicket> {
                                                       value: 1,
                                                       groupValue: statusPayment,
                                                       onChanged: (value) {
+                                                        if (statusTicket != 0) {
+                                                          _appSnackbar
+                                                              .buildSnackbar(
+                                                                  context,
+                                                                  "The ticket was finished!");
+                                                          return;
+                                                        }
+
                                                         setState(() {
                                                           statusPayment =
                                                               value!;
@@ -763,133 +906,142 @@ class StateEditTicket extends State<EditTicket> {
                                     ],
                                   )),
                               Container(
+                                  padding: EdgeInsets.only(top: 8),
                                   width: double.infinity,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'Status Ticket',
-                                        style: TextStyle(
-                                            fontFamily: 'Roboto bold',
-                                            fontSize: 18,
-                                            color: Colors.grey),
-                                      ),
-                                      Container(
-                                        width: double.infinity,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Expanded(
-                                                flex: 1,
-                                                child: Container(
-                                                  width: double.infinity,
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Radio(
-                                                        activeColor:
-                                                            Colors.yellow,
-                                                        value: 0,
-                                                        groupValue:
-                                                            statusTicket,
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            statusTicket =
-                                                                value!;
-                                                          });
-                                                        },
-                                                      ),
-                                                      Text(
-                                                        'Upcomming',
-                                                        style: TextStyle(
-                                                            fontFamily:
-                                                                'Roboto bold',
-                                                            fontSize: 16,
-                                                            color: AppColor
-                                                                .mainColor),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )),
-                                            Expanded(
-                                                flex: 1,
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Radio(
-                                                      activeColor:
-                                                          Colors.greenAccent,
-                                                      value: 1,
-                                                      groupValue: statusTicket,
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          statusTicket = value!;
-                                                        });
-                                                      },
-                                                    ),
-                                                    Container(
-                                                      child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Text(
-                                                              'Completed',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      'Roboto bold',
-                                                                  fontSize: 16,
-                                                                  color: AppColor
-                                                                      .mainColor),
-                                                            ),
-                                                          ]),
-                                                    )
-                                                  ],
-                                                )),
-                                            Expanded(
-                                                flex: 1,
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Radio(
-                                                      activeColor:
-                                                          Colors.redAccent,
-                                                      value: 2,
-                                                      groupValue: statusTicket,
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          statusTicket = value!;
-                                                        });
-                                                      },
-                                                    ),
-                                                    Container(
-                                                      child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Text(
-                                                              'Cancel',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      'Roboto bold',
-                                                                  fontSize: 16,
-                                                                  color: AppColor
-                                                                      .mainColor),
-                                                            ),
-                                                          ]),
-                                                    )
-                                                  ],
-                                                )),
-                                          ],
-                                        ),
-                                      ),
+                                      // Text(
+                                      //   'Status Ticket',
+                                      //   style: TextStyle(
+                                      //       fontFamily: 'Roboto bold',
+                                      //       fontSize: 18,
+                                      //       color: Colors.grey),
+                                      // ),
+                                      // Container(
+                                      //   // padding:
+                                      //   //     EdgeInsets.only(top: 5, bottom: 5),
+                                      //   width: double.infinity,
+                                      //   decoration: BoxDecoration(
+                                      //       borderRadius: BorderRadius.all(
+                                      //           Radius.circular(4)),
+                                      //       border: Border.all(
+                                      //           width: 2,
+                                      //           color: AppColor.mainColor)),
+                                      //   child: Row(
+                                      //     mainAxisAlignment:
+                                      //         MainAxisAlignment.center,
+                                      //     children: [
+                                      //       Expanded(
+                                      //           flex: 1,
+                                      //           child: Container(
+                                      //             width: double.infinity,
+                                      //             child: Row(
+                                      //               mainAxisAlignment:
+                                      //                   MainAxisAlignment
+                                      //                       .center,
+                                      //               children: [
+                                      //                 Radio(
+                                      //                   activeColor:
+                                      //                       Colors.yellow,
+                                      //                   value: 0,
+                                      //                   groupValue:
+                                      //                       statusTicket,
+                                      //                   onChanged: (value) {
+                                      //                     setState(() {
+                                      //                       statusTicket =
+                                      //                           value!;
+                                      //                     });
+                                      //                   },
+                                      //                 ),
+                                      //                 Text(
+                                      //                   'Upcomming',
+                                      //                   style: TextStyle(
+                                      //                       fontFamily:
+                                      //                           'Roboto bold',
+                                      //                       fontSize: 16,
+                                      //                       color: AppColor
+                                      //                           .mainColor),
+                                      //                 ),
+                                      //               ],
+                                      //             ),
+                                      //           )),
+                                      //       Expanded(
+                                      //           flex: 1,
+                                      //           child: Row(
+                                      //             mainAxisAlignment:
+                                      //                 MainAxisAlignment.center,
+                                      //             children: [
+                                      //               Radio(
+                                      //                 activeColor:
+                                      //                     Colors.greenAccent,
+                                      //                 value: 1,
+                                      //                 groupValue: statusTicket,
+                                      //                 onChanged: (value) {
+                                      //                   setState(() {
+                                      //                     statusTicket = value!;
+                                      //                   });
+                                      //                 },
+                                      //               ),
+                                      //               Container(
+                                      //                 child: Row(
+                                      //                     mainAxisAlignment:
+                                      //                         MainAxisAlignment
+                                      //                             .center,
+                                      //                     children: [
+                                      //                       Text(
+                                      //                         'Completed',
+                                      //                         style: TextStyle(
+                                      //                             fontFamily:
+                                      //                                 'Roboto bold',
+                                      //                             fontSize: 16,
+                                      //                             color: AppColor
+                                      //                                 .mainColor),
+                                      //                       ),
+                                      //                     ]),
+                                      //               )
+                                      //             ],
+                                      //           )),
+                                      //       Expanded(
+                                      //           flex: 1,
+                                      //           child: Row(
+                                      //             mainAxisAlignment:
+                                      //                 MainAxisAlignment.center,
+                                      //             children: [
+                                      //               Radio(
+                                      //                 activeColor:
+                                      //                     Colors.redAccent,
+                                      //                 value: 2,
+                                      //                 groupValue: statusTicket,
+                                      //                 onChanged: (value) {
+                                      //                   setState(() {
+                                      //                     statusTicket = value!;
+                                      //                   });
+                                      //                 },
+                                      //               ),
+                                      //               Container(
+                                      //                 child: Row(
+                                      //                     mainAxisAlignment:
+                                      //                         MainAxisAlignment
+                                      //                             .center,
+                                      //                     children: [
+                                      //                       Text(
+                                      //                         'Cancel',
+                                      //                         style: TextStyle(
+                                      //                             fontFamily:
+                                      //                                 'Roboto bold',
+                                      //                             fontSize: 16,
+                                      //                             color: AppColor
+                                      //                                 .mainColor),
+                                      //                       ),
+                                      //                     ]),
+                                      //               )
+                                      //             ],
+                                      //           )),
+                                      //     ],
+                                      //   ),
+                                      // ),
                                       Container(
                                         padding: EdgeInsets.only(top: 10),
                                         width: double.infinity,
@@ -899,6 +1051,14 @@ class StateEditTicket extends State<EditTicket> {
                                             children: [
                                               ElevatedButton.icon(
                                                   onPressed: () async {
+                                                    if (_selectedSeatEditingController
+                                                        .text.isEmpty) {
+                                                      _appSnackbar.buildSnackbar(
+                                                          context,
+                                                          'Booked seats is empty!');
+                                                      return;
+                                                    }
+
                                                     Ticket changedTicket = Ticket(
                                                         keyTicket: widget
                                                             .ticket.idTicket,
@@ -946,8 +1106,26 @@ class StateEditTicket extends State<EditTicket> {
                                                               .removeSelectedSeats(
                                                                   widget
                                                                       .detailBookedTicket);
-                                                          selectedSeats.forEach(
-                                                              (element) async {
+
+                                                          // selectedSeats.forEach(
+                                                          //     (element) async {
+                                                          //   print(element);
+                                                          //   DetailTicket
+                                                          //       detailTicket =
+                                                          //       DetailTicket(
+                                                          //           idTicket: widget
+                                                          //               .ticket
+                                                          //               .idTicket,
+                                                          //           numberSeat:
+                                                          //               element);
+                                                          //   //final isUploadDetail =
+                                                          //   await InsertData()
+                                                          //       .insertDetailTicket(
+                                                          //           detailTicket);
+                                                          // });
+
+                                                          for (var element
+                                                              in selectedSeats) {
                                                             DetailTicket
                                                                 detailTicket =
                                                                 DetailTicket(
@@ -956,11 +1134,11 @@ class StateEditTicket extends State<EditTicket> {
                                                                         .idTicket,
                                                                     numberSeat:
                                                                         element);
-                                                            final isUploadDetail =
-                                                                await InsertData()
-                                                                    .insertDetailTicket(
-                                                                        detailTicket);
-                                                          });
+                                                            //final isUploadDetail =
+                                                            await InsertData()
+                                                                .insertDetailTicket(
+                                                                    detailTicket);
+                                                          }
                                                         }
 
                                                         _appSnackbar
@@ -1001,80 +1179,80 @@ class StateEditTicket extends State<EditTicket> {
                                                       fontSize: 18,
                                                     ),
                                                   )),
-                                              const SizedBox(
-                                                width: 10,
-                                              ),
-                                              ElevatedButton.icon(
-                                                  onPressed: () async {
-                                                    bool shouldVerify =
-                                                        await _cupertinoDialog
-                                                            .createCupertinoDialog(
-                                                                AppColor
-                                                                    .mainColor,
-                                                                'Delete',
-                                                                'Delete this ticket?',
-                                                                context);
+                                              // const SizedBox(
+                                              //   width: 10,
+                                              // ),
+                                              // ElevatedButton.icon(
+                                              //     onPressed: () async {
+                                              //       bool shouldVerify =
+                                              //           await _cupertinoDialog
+                                              //               .createCupertinoDialog(
+                                              //                   AppColor
+                                              //                       .mainColor,
+                                              //                   'Delete',
+                                              //                   'Delete this ticket?',
+                                              //                   context);
 
-                                                    if (shouldVerify) {
-                                                      try {
-                                                        final _appCircleprogressbar =
-                                                            AppCircleprogressbar();
-                                                        _appCircleprogressbar
-                                                            .buildCirclerprogessbar(
-                                                                context);
+                                              //       if (shouldVerify) {
+                                              //         try {
+                                              //           final _appCircleprogressbar =
+                                              //               AppCircleprogressbar();
+                                              //           _appCircleprogressbar
+                                              //               .buildCirclerprogessbar(
+                                              //                   context);
 
-                                                        await _removeController
-                                                            .removeSelectedSeats(
-                                                                widget
-                                                                    .detailBookedTicket);
-                                                        final isRemove =
-                                                            await _removeController
-                                                                .removeATicket(
-                                                                    widget
-                                                                        .ticket
-                                                                        .idTicket);
-                                                        Navigator.of(context)
-                                                            .pop();
+                                              //           await _removeController
+                                              //               .removeSelectedSeats(
+                                              //                   widget
+                                              //                       .detailBookedTicket);
+                                              //           final isRemove =
+                                              //               await _removeController
+                                              //                   .removeATicket(
+                                              //                       widget
+                                              //                           .ticket
+                                              //                           .idTicket);
+                                              //           Navigator.of(context)
+                                              //               .pop();
 
-                                                        if (isRemove) {
-                                                          _appSnackbar
-                                                              .buildSnackbar(
-                                                                  context,
-                                                                  'Delete Successfully!');
+                                              //           if (isRemove) {
+                                              //             _appSnackbar
+                                              //                 .buildSnackbar(
+                                              //                     context,
+                                              //                     'Delete Successfully!');
 
-                                                          Get.offAll(
-                                                              ScaffoldWithNavigationRail(
-                                                                  selectedIndex:
-                                                                      4));
-                                                        } else {
-                                                          _appSnackbar
-                                                              .buildSnackbar(
-                                                                  context,
-                                                                  'Delete fail!');
-                                                        }
-                                                      } catch (e) {
-                                                        _appSnackbar
-                                                            .buildSnackbar(
-                                                                context,
-                                                                'Delete fail!');
-                                                      }
-                                                    }
-                                                  },
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                              Colors.redAccent,
-                                                          foregroundColor:
-                                                              Colors.white),
-                                                  icon:
-                                                      const Icon(Icons.delete),
-                                                  label: const Text(
-                                                    'Delete',
-                                                    style: TextStyle(
-                                                      fontFamily: 'Roboto bold',
-                                                      fontSize: 18,
-                                                    ),
-                                                  )),
+                                              //             Get.offAll(
+                                              //                 ScaffoldWithNavigationRail(
+                                              //                     selectedIndex:
+                                              //                         4));
+                                              //           } else {
+                                              //             _appSnackbar
+                                              //                 .buildSnackbar(
+                                              //                     context,
+                                              //                     'Delete fail!');
+                                              //           }
+                                              //         } catch (e) {
+                                              //           _appSnackbar
+                                              //               .buildSnackbar(
+                                              //                   context,
+                                              //                   'Delete fail!');
+                                              //         }
+                                              //       }
+                                              //     },
+                                              //     style:
+                                              //         ElevatedButton.styleFrom(
+                                              //             backgroundColor:
+                                              //                 Colors.redAccent,
+                                              //             foregroundColor:
+                                              //                 Colors.white),
+                                              //     icon:
+                                              //         const Icon(Icons.delete),
+                                              //     label: const Text(
+                                              //       'Delete',
+                                              //       style: TextStyle(
+                                              //         fontFamily: 'Roboto bold',
+                                              //         fontSize: 18,
+                                              //       ),
+                                              //     )),
                                             ]),
                                       )
                                     ],

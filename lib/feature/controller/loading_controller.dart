@@ -11,6 +11,7 @@ import 'package:booking_transition_admin/feature/presentation/Ticket/item_ticket
 import 'package:booking_transition_admin/feature/presentation/Ticket/seat_item.dart';
 import 'package:booking_transition_admin/feature/presentation/Vehicle/item_vehicle_data.dart';
 import 'package:booking_transition_admin/feature/services/get_data.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -38,18 +39,18 @@ class LoadingController {
     accounts = await GetData.fetchInfoAccount();
     cities = await GetData.fetchCities();
 
-    tickets.forEach((elementTicket) {
+    for (var elementTicket in tickets) {
       TicketRowData item = TicketRowData();
-      routes.forEach((elementRoute) {
+      for (var elementRoute in routes) {
         if (elementTicket.idTransition == elementRoute.keyRoute) {
           if (elementRoute.departureDate == time) {
             item.idTicket = elementTicket.keyTicket;
             String idAccount = elementTicket.idAccount;
-            if (idAccount.contains("KHVL") && idAccount.contains("PN")) {
+            if (idAccount.contains("KHVL@") && idAccount.contains("-PN#")) {
               String name = idAccount.substring(
-                  idAccount.indexOf('L') + 1, idAccount.indexOf('P'));
+                  idAccount.indexOf('@') + 1, idAccount.indexOf('-'));
               String phoneNums =
-                  idAccount.substring(idAccount.indexOf('N') + 1);
+                  idAccount.substring(idAccount.indexOf('#') + 1);
               item.name = name;
               item.phone = phoneNums;
               item.idAccount = elementTicket.idAccount;
@@ -69,38 +70,38 @@ class LoadingController {
             item.statusTicket = elementTicket.statusTicket;
             item.methodPayment = elementTicket.methodPayment;
 
-            cities.forEach((elementCity) {
+            for (var elementCity in cities) {
               if (elementCity.idCity == item.from) {
                 item.from = elementCity.nameCity;
               } else if (elementCity.idCity == item.where) {
                 item.where = elementCity.nameCity;
               }
-            });
+            }
 
             data.add(item);
           }
         }
-      });
-    });
+      }
+    }
 
-    accounts.forEach((elementAccount) {
-      data.forEach((elementData) {
+    for (var elementAccount in accounts) {
+      for (var elementData in data) {
         if (elementAccount.idAccount == elementData.name) {
           elementData.name = elementAccount.fullName;
           elementData.phone = elementAccount.phoneNums;
           elementData.idAccount = elementAccount.idAccount;
         }
-      });
-    });
+      }
+    }
 
     if (phone.isEmpty) {
       return data;
     } else {
-      data.forEach((element) {
+      for (var element in data) {
         if (element.phone.contains(phone)) {
           result.add(element);
         }
-      });
+      }
       return result;
     }
   }
@@ -119,11 +120,12 @@ class LoadingController {
     cities = await GetData.fetchCities();
     details = await GetData.fetchDetailTicket();
 
-    routes.forEach((elementRoute) {
+    for (var elementRoute in routes) {
       DashboardRowData item = DashboardRowData();
       int indexStart = elementRoute.departureDate.indexOf('/') + 1;
       if (elementRoute.departureDate.substring(indexStart) == time) {
         //get
+        item.idRoute = elementRoute.keyRoute;
         item.departureDate = elementRoute.departureDate;
         item.departureTime = elementRoute.departureTime;
         item.idVehicle = elementRoute.idVehicle;
@@ -132,37 +134,37 @@ class LoadingController {
         item.prices = elementRoute.prices;
 
         int bookedSeat = 0;
-        tickets.forEach((elementTicket) {
+        for (var elementTicket in tickets) {
           if (elementRoute.keyRoute == elementTicket.idTransition) {
-            details.forEach((elementDetail) {
+            for (var elementDetail in details) {
               if (elementTicket.keyTicket == elementDetail.idTicket) {
                 bookedSeat += 1;
               }
-            });
+            }
           }
-        });
+        }
         item.bookedSeat = bookedSeat.toString();
 
         data.add(item);
       }
-    });
+    }
 
     if (data.isNotEmpty) {
-      data.forEach((elementData) {
-        vehicles.forEach((elementVehicle) {
+      for (var elementData in data) {
+        for (var elementVehicle in vehicles) {
           if (elementData.idVehicle == elementVehicle.idVehicle) {
             elementData.capacity = elementVehicle.capacity.toString();
           }
-        });
+        }
 
-        cities.forEach((elementCity) {
+        for (var elementCity in cities) {
           if (elementData.from == elementCity.idCity) {
             elementData.from = elementCity.nameCity;
           } else if (elementData.where == elementCity.idCity) {
             elementData.where = elementCity.nameCity;
           }
-        });
-      });
+        }
+      }
     }
     return data;
   }
@@ -174,23 +176,24 @@ class LoadingController {
     vehicles = await GetData.fetchVehicle();
     routes = await GetData.fetchRoute();
 
-    vehicles.forEach((elementVehicle) {
+    for (var elementVehicle in vehicles) {
       VehicleRowData item = VehicleRowData();
       item.idVehicle = elementVehicle.idVehicle;
       item.capacity = elementVehicle.capacity.toString();
       item.name = elementVehicle.name;
       item.urlImage = elementVehicle.urlImage;
+      item.currentLocation = elementVehicle.location;
 
       int totalRoute = 0;
-      routes.forEach((elementRoutes) {
+      for (var elementRoutes in routes) {
         if (elementRoutes.idVehicle == elementVehicle.idVehicle) {
           totalRoute += 1;
         }
-      });
+      }
       item.totalRoutes = totalRoute.toString();
 
       data.add(item);
-    });
+    }
     return data;
   }
 
@@ -200,14 +203,14 @@ class LoadingController {
 
     cities = await GetData.fetchCities();
 
-    cities.forEach((element) {
+    for (var element in cities) {
       CityRowData item = CityRowData();
       item.idCity = element.idCity;
       item.nameCity = element.nameCity;
       item.urlImage = element.urlImage;
 
       data.add(item);
-    });
+    }
     print(data.length);
     return data;
   }
@@ -226,7 +229,7 @@ class LoadingController {
     cities = await GetData.fetchCities();
     details = await GetData.fetchDetailTicket();
 
-    routes.forEach((elementRoute) {
+    for (var elementRoute in routes) {
       RouteRowData item = RouteRowData();
       int indexStart = elementRoute.departureDate.indexOf('/') + 1;
       if (elementRoute.departureDate.substring(indexStart) == time) {
@@ -238,40 +241,41 @@ class LoadingController {
         item.where.idCity = elementRoute.where;
         item.price = elementRoute.prices;
         item.featured = elementRoute.featured;
+        item.statusActive = elementRoute.statusActive;
 
         int bookedSeat = 0;
-        tickets.forEach((elementTicket) {
+        for (var elementTicket in tickets) {
           if (elementRoute.keyRoute == elementTicket.idTransition) {
-            details.forEach((elementDetail) {
+            for (var elementDetail in details) {
               if (elementTicket.keyTicket == elementDetail.idTicket) {
                 bookedSeat += 1;
               }
-            });
+            }
           }
-        });
+        }
         item.bookedSeat = bookedSeat.toString();
 
         data.add(item);
       }
-    });
+    }
 
     if (data.isNotEmpty) {
-      data.forEach((elementData) {
+      for (var elementData in data) {
         // vehicles.forEach((elementVehicle) {
         //   if (elementData.idVehicle == elementVehicle.idVehicle) {
         //     elementData.capacity = elementVehicle.capacity.toString();
         //   }
         // });
 
-        cities.forEach((elementCity) {
+        for (var elementCity in cities) {
           if (elementData.from.idCity == elementCity.idCity) {
             elementData.from.nameCity = elementCity.nameCity;
           } else if (elementData.where.idCity == elementCity.idCity) {
             elementData.where.nameCity = elementCity.nameCity;
             //elementData.urlImage = elementCity.urlImage;
           }
-        });
-      });
+        }
+      }
     }
     return data;
   }
@@ -301,26 +305,54 @@ class LoadingController {
     List<Transitions> routes = [];
     List<Vehicle> vehicles = [];
     List<RouteRowData> data = [];
+    //List<SeatItem> bookedSeats = [];
+    List<DashboardRowData> dashboard = [];
+
     routes = await GetData.fetchRoute();
     vehicles = await GetData.fetchVehicle();
+    dashboard = await setDashboardData(date.substring(date.indexOf('/') + 1));
 
     routes.forEach((elementRoute) {
       if (elementRoute.from == from &&
           elementRoute.where == where &&
           elementRoute.departureDate == date) {
-        print(elementRoute.from);
-        RouteRowData item = RouteRowData();
-        item.idRoute = elementRoute.keyRoute;
-        item.idVehicle = elementRoute.idVehicle;
-        item.departureTime = elementRoute.departureTime;
-        item.price = elementRoute.prices;
+        //print(elementRoute.from);
 
-        vehicles.forEach((elementVehicle) {
-          if (elementRoute.idVehicle == elementVehicle.idVehicle) {
-            item.capacity = elementVehicle.capacity.toString();
+        var dateParts = elementRoute.departureDate.split('/');
+        int day = int.parse(dateParts[0]);
+        int month = int.parse(dateParts[1]);
+        int year = int.parse(dateParts[2]);
+
+        String departureTime = elementRoute.departureTime;
+        int hour =
+            int.parse(departureTime.substring(0, departureTime.indexOf(':')));
+        int minute =
+            int.parse(departureTime.substring(departureTime.indexOf(':') + 1));
+
+        var dateTime = DateTime(year, month, day, hour, minute);
+        var milisecond = dateTime.millisecondsSinceEpoch;
+        if (milisecond > DateTime.now().millisecondsSinceEpoch) {
+          RouteRowData item = RouteRowData();
+          item.idRoute = elementRoute.keyRoute;
+          item.idVehicle = elementRoute.idVehicle;
+          item.departureTime = elementRoute.departureTime;
+          item.price = elementRoute.prices;
+          //bookedSeats = await getBookedSeats(elementRoute.keyRoute);
+          //item.bookedSeat = bookedSeats.length.toString();
+
+          dashboard.forEach((elementDash) {
+            if (elementDash.idRoute == item.idRoute) {
+              item.bookedSeat = elementDash.bookedSeat;
+            }
+          });
+
+          for (var elementVehicle in vehicles) {
+            if (elementRoute.idVehicle == elementVehicle.idVehicle) {
+              item.capacity = elementVehicle.capacity.toString();
+            }
           }
-        });
-        data.add(item);
+          data.add(item);
+        }
       }
     });
     print(data.length);
@@ -337,20 +369,21 @@ class LoadingController {
     tickets = await GetData.fetchTicket();
     details = await GetData.fetchDetailTicket();
 
-    routes.forEach((elementRoute) {
+    for (var elementRoute in routes) {
       if (elementRoute.keyRoute == idRoute) {
-        tickets.forEach((elementTicket) {
-          if (elementRoute.keyRoute == elementTicket.idTransition) {
-            details.forEach((elementDetail) {
+        for (var elementTicket in tickets) {
+          if (elementRoute.keyRoute == elementTicket.idTransition &&
+              elementTicket.statusTicket != '2') {
+            for (var elementDetail in details) {
               if (elementDetail.idTicket == elementTicket.keyTicket) {
                 SeatItem item = SeatItem(index: elementDetail.numberSeat);
                 data.add(item);
               }
-            });
+            }
           }
-        });
+        }
       }
-    });
+    }
     return data;
   }
 
@@ -359,11 +392,11 @@ class LoadingController {
     List<String> editedSeats = [];
     details = await GetData.fetchDetailTicket();
 
-    details.forEach((element) {
+    for (var element in details) {
       if (element.idTicket == idTicket) {
         editedSeats.add(element.numberSeat);
       }
-    });
+    }
     return editedSeats;
   }
 
@@ -383,7 +416,8 @@ class LoadingController {
             departureTime: element.departureTime,
             from: element.from,
             where: element.where,
-            featured: element.featured);
+            featured: element.featured,
+            statusActive: element.statusActive);
         break;
       }
     }
@@ -401,7 +435,8 @@ class LoadingController {
             idVehicle: element.idVehicle,
             name: element.name,
             capacity: element.capacity,
-            urlImage: element.urlImage);
+            urlImage: element.urlImage,
+            location: element.location);
         break;
       }
     }
@@ -413,11 +448,32 @@ class LoadingController {
     List<String> detailID = [];
     details = await GetData.fetchDetailTicket();
 
-    details.forEach((element) {
+    for (var element in details) {
       if (element.idTicket == idTicket) {
         detailID.add(element.keyDetail);
       }
-    });
+    }
     return detailID;
+  }
+
+  Future getUpcomingRouteVehicle() async {
+    List<Transitions> routes = [];
+    List<Vehicle> vehicles = [];
+    List<String> results = [];
+
+    routes = await GetData.fetchRoute();
+    vehicles = await GetData.fetchVehicle();
+
+    routes.forEach((elementRoute) {
+      if (elementRoute.statusActive == '0') {
+        vehicles.forEach((elementVehicle) {
+          if (elementVehicle.idVehicle == elementRoute.idVehicle) {
+            print(elementRoute.idVehicle);
+            results.add(elementVehicle.idVehicle);
+          }
+        });
+      }
+    });
+    return results;
   }
 }

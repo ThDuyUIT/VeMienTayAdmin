@@ -1,5 +1,4 @@
-import 'dart:html';
-
+import 'package:booking_transition_admin/feature/controller/trigger_controller.dart';
 import 'package:booking_transition_admin/feature/model/route.dart';
 import 'package:booking_transition_admin/feature/model/ticket.dart';
 import 'package:booking_transition_admin/feature/services/get_data.dart';
@@ -44,15 +43,17 @@ class RemoveController {
   Future removeACity(String idCity) async {
     late bool isRemove;
     late bool isRemoveImg;
-    bool isActive = false;
-    List<Transitions> routes = [];
-    routes = await GetData.fetchRoute();
-    for (var element in routes) {
-      if (element.from == idCity || element.where == idCity) {
-        isActive = true;
-        break;
-      }
-    }
+    final _triggerController = TriggerController();
+    bool isActive = await _triggerController.checkActiveCity(idCity);
+    // bool isActive = false;
+    // List<Transitions> routes = [];
+    // routes = await GetData.fetchRoute();
+    // for (var element in routes) {
+    //   if (element.from == idCity || element.where == idCity) {
+    //     isActive = true;
+    //     break;
+    //   }
+    // }
     if (isActive) {
       isRemove = false;
     } else {
@@ -68,15 +69,17 @@ class RemoveController {
   Future removeAVehicle(String idVehicle) async {
     late bool isRemove;
     late bool isRemoveImg;
-    bool isActive = false;
-    List<Transitions> routes = [];
-    routes = await GetData.fetchRoute();
-    for (var element in routes) {
-      if (element.idVehicle == idVehicle) {
-        isActive = true;
-        break;
-      }
-    }
+    final _triggerController = TriggerController();
+    bool isActive = await _triggerController.checkActiveVehicle(idVehicle);
+    // bool isActive = false;
+    // List<Transitions> routes = [];
+    // routes = await GetData.fetchRoute();
+    // for (var element in routes) {
+    //   if (element.idVehicle == idVehicle) {
+    //     isActive = true;
+    //     break;
+    //   }
+    // }
     if (isActive) {
       isRemove = false;
     } else {

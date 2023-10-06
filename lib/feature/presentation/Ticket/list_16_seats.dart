@@ -1,4 +1,6 @@
 import 'package:booking_transition_admin/advance_icons.dart';
+import 'package:booking_transition_admin/basic_component/snackbar.dart';
+import 'package:booking_transition_admin/feature/presentation/Ticket/edit_ticket.dart';
 import 'package:booking_transition_admin/feature/presentation/Ticket/seat_item.dart';
 import 'package:booking_transition_admin/feature/presentation/Ticket/seat_item_widget.dart';
 import 'package:booking_transition_admin/untils/colors.dart';
@@ -18,6 +20,30 @@ class List16Seats extends StatefulWidget {
 class StateList16Seats extends State<List16Seats> {
   static List<String> selectedindex = [];
   static List<SeatItem> bookedSeat = [];
+  static List<String> selectedSeatOfTicket = [];
+  static late int statusTicket;
+  final _appSnackbar = AppSnackbar();
+
+  @override
+  void initState() {
+    print('selected: ');
+    for (var seat in seats) {
+      //seat.color = AppColor.mainColor;
+      for (var booked in bookedSeat) {
+        if (seat.index.toString() == booked.index) {
+          seat.color = Colors.red;
+        }
+      }
+
+      for (var selected in selectedSeatOfTicket) {
+        print(selected);
+        if (seat.index.toString() == selected) {
+          seat.color = Colors.greenAccent;
+        }
+      }
+    }
+    super.initState();
+  }
   //static List<String> editedSeat = [];
 
   static List<SeatItem> seats = [
@@ -41,6 +67,10 @@ class StateList16Seats extends State<List16Seats> {
   Color seatIconColor = Colors.black;
 
   void selectedSeat(int i) {
+    if (statusTicket != 0) {
+      _appSnackbar.buildSnackbar(context, "The ticket was finished!");
+      return;
+    }
     setState(() {
       if (seats[i].color == AppColor.mainColor) {
         seats[i].color = Colors.greenAccent;
@@ -58,14 +88,27 @@ class StateList16Seats extends State<List16Seats> {
 
   @override
   Widget build(BuildContext context) {
+    bookedSeat = bookedSeat
+        .where((element) => !selectedSeatOfTicket.contains(element.index))
+        .toList();
+    print('booked: ');
     for (var seat in seats) {
       //seat.color = AppColor.mainColor;
       for (var booked in bookedSeat) {
+        print(booked.index);
         if (seat.index.toString() == booked.index) {
           seat.color = Colors.red;
         }
       }
     }
+
+    //   for (var selected in selectedSeatOfTicket) {
+    //     print(selected);
+    //     if (seat.index.toString() == selected) {
+    //       seat.color = Colors.greenAccent;
+    //     }
+    //   }
+    // }
 
     return Container(
       //margin: EdgeInsets.only(left: 20, right: 20, bottom: 10),

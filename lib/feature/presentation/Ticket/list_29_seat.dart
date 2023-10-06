@@ -1,3 +1,6 @@
+import 'package:booking_transition_admin/basic_component/snackbar.dart';
+import 'package:booking_transition_admin/feature/model/ticket.dart';
+import 'package:booking_transition_admin/feature/presentation/Ticket/edit_ticket.dart';
 import 'package:booking_transition_admin/feature/presentation/Ticket/seat_item.dart';
 import 'package:booking_transition_admin/feature/presentation/Ticket/seat_item_widget.dart';
 import 'package:booking_transition_admin/untils/colors.dart';
@@ -20,6 +23,30 @@ class List29Seats extends StatefulWidget {
 class StateList29Seats extends State<List29Seats> {
   static List<String> selectedindex = [];
   static late List<SeatItem> bookedSeat;
+  static List<String> selectedSeatOfTicket = [];
+  static late int statusTicket;
+  final _appSnackbar = AppSnackbar();
+
+  @override
+  void initState() {
+    print('selected: ');
+    for (var seat in seats) {
+      //seat.color = AppColor.mainColor;
+      for (var booked in bookedSeat) {
+        if (seat.index.toString() == booked.index) {
+          seat.color = Colors.red;
+        }
+      }
+
+      for (var selected in selectedSeatOfTicket) {
+        print(selected);
+        if (seat.index.toString() == selected) {
+          seat.color = Colors.greenAccent;
+        }
+      }
+    }
+    super.initState();
+  }
 
   static List<SeatItem> seats = [
     SeatItem(index: '1A'),
@@ -55,6 +82,10 @@ class StateList29Seats extends State<List29Seats> {
   Color seatIconColor = Colors.black;
 
   void selectedSeat(int i) {
+    if (statusTicket != 0) {
+      _appSnackbar.buildSnackbar(context, "The ticket was finished!");
+      return;
+    }
     setState(() {
       if (seats[i].color == AppColor.mainColor) {
         seats[i].color = Colors.greenAccent;
@@ -72,6 +103,9 @@ class StateList29Seats extends State<List29Seats> {
 
   @override
   Widget build(BuildContext context) {
+    bookedSeat = bookedSeat
+        .where((element) => !selectedSeatOfTicket.contains(element.index))
+        .toList();
     for (var seat in seats) {
       //seat.color = AppColor.mainColor;
       for (var booked in bookedSeat) {

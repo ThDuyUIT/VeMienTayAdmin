@@ -34,32 +34,42 @@ class StateScaffoldWithNavigationRail
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-            shape: Border(
-                bottom: BorderSide(width: 1, color: Colors.grey.shade300)),
-            title: RichText(
-              text: TextSpan(children: <TextSpan>[
-                TextSpan(
-                    text: 'VeMienTay',
-                    style: TextStyle(
-                        fontFamily: 'Roboto bold',
-                        color: AppColor.mainColor,
-                        fontSize: 20)),
-                const TextSpan(
-                    text: 'Admin',
-                    style: TextStyle(
-                        fontFamily: 'Roboto bold',
-                        color: Colors.grey,
-                        fontSize: 20)),
-              ]),
+          shape:
+              Border(bottom: BorderSide(width: 1, color: Colors.grey.shade300)),
+          title: RichText(
+            text: TextSpan(children: <TextSpan>[
+              TextSpan(
+                  text: 'VeMienTay',
+                  style: TextStyle(
+                      fontFamily: 'Roboto bold',
+                      color: AppColor.mainColor,
+                      fontSize: 20)),
+              const TextSpan(
+                  text: 'Admin',
+                  style: TextStyle(
+                      fontFamily: 'Roboto bold',
+                      color: Colors.grey,
+                      fontSize: 20)),
+            ]),
+          ),
+          actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: Icon(
+                Icons.logout_rounded,
+                color: Colors.redAccent,
+                size: 30,
+              ),
             )
-            // Text(
-            //   'VeMienTay',
-            //   style: TextStyle(
-            //       color: AppColor.mainColor,
-            //       fontFamily: 'Roboto bold',
-            //       fontSize: 20),
-            // ),
-            ),
+          ],
+          // Text(
+          //   'VeMienTay',
+          //   style: TextStyle(
+          //       color: AppColor.mainColor,
+          //       fontFamily: 'Roboto bold',
+          //       fontSize: 20),
+          // ),
+        ),
         body: Row(
           children: [
             Container(
@@ -142,10 +152,23 @@ class StateScaffoldWithNavigationRail
                   setState(() {
                     widget.selectedIndex = value;
                   });
+
+                  widget.selectedIndex == 0
+                      ? Get.offNamed('/dashboard')
+                      : widget.selectedIndex == 1
+                          ? Get.offNamed('/vehicle')
+                          : widget.selectedIndex == 2
+                              ? Get.offNamed('/city')
+                              : widget.selectedIndex == 3
+                                  ? Get.offNamed('/transition')
+                                  : Get.offNamed('/ticket');
                 },
               ),
             ),
             Expanded(child: _screen[widget.selectedIndex])
+            // Expanded(
+            //   child:
+            // )
           ],
         ),
       ),

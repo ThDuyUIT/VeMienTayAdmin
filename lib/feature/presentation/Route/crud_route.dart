@@ -4,6 +4,7 @@ import 'package:booking_transition_admin/basic_component/circleprogressbar.dart'
 import 'package:booking_transition_admin/basic_component/mycupertinodialog.dart';
 import 'package:booking_transition_admin/basic_component/snackbar.dart';
 import 'package:booking_transition_admin/feature/controller/remove_controller.dart';
+import 'package:booking_transition_admin/feature/controller/trigger_controller.dart';
 import 'package:booking_transition_admin/feature/controller/upload_controller.dart';
 import 'package:booking_transition_admin/feature/model/city.dart';
 import 'package:booking_transition_admin/feature/model/route.dart';
@@ -15,7 +16,9 @@ import 'package:booking_transition_admin/feature/services/get_data.dart';
 import 'package:booking_transition_admin/untils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:intl/intl.dart';
 
 class CrudRoute extends StatefulWidget {
   bool isAddNew = false;
@@ -31,6 +34,7 @@ class CrudRoute extends StatefulWidget {
 
 class StateCrudRoute extends State<CrudRoute> {
   late int valueFeatured;
+  late int valueStatus;
   late TextEditingController _dateEditingController;
   late TextEditingController _timeEditingController;
   late TextEditingController _pricesEditingController;
@@ -38,7 +42,10 @@ class StateCrudRoute extends State<CrudRoute> {
   late String _selectedWhere;
   late String _selectedVehicle;
   static List<City> cities = [];
+  //static List<City> filterCities = [];
+  List<Vehicle> filteredVehicle = [];
   static List<Vehicle> vehicles = [];
+  static List<String> upcomingRouteVehicles = [];
   bool imageFromFile = false;
   late Uint8List imageFile;
   final _appSnackbar = AppSnackbar();
@@ -46,14 +53,47 @@ class StateCrudRoute extends State<CrudRoute> {
 
   final _cupertinoDialog = MyCupertinoDialog();
   final _removeController = RemoveController();
+  final _triggerController = TriggerController();
 
   @override
   void initState() {
     if (widget.isAddNew == false) {
       _selectedFrom = widget.route.from.idCity;
       _selectedWhere = widget.route.where.idCity;
+      //filterCities = cities.where((element) => element.idCity != _selectedFrom).toList();
+
       _selectedVehicle = widget.route.idVehicle;
+      if (widget.route.statusActive == '1') {
+        filteredVehicle = vehicles
+            .where((element) => element.location == _selectedWhere)
+            .toList();
+
+        // filteredVehicle = filteredVehicle
+        //     .where((element) => !upcomingRouteVehicles.contains(element))
+        //     .toList();
+      } else {
+        filteredVehicle = vehicles
+            .where((element) => element.location == _selectedFrom)
+            .toList();
+
+        filteredVehicle = filteredVehicle
+            .where(
+                (element) => !upcomingRouteVehicles.contains(element.idVehicle))
+            .toList();
+
+        vehicles.forEach((element) {
+          if (element.idVehicle == _selectedVehicle) {
+            filteredVehicle.add(element);
+          }
+        });
+      }
+
       valueFeatured = widget.route.featured == '0' ? 0 : 1;
+      valueStatus = widget.route.statusActive == '0'
+          ? 0
+          : widget.route.statusActive == '1'
+              ? 1
+              : 2;
       _dateEditingController =
           TextEditingController(text: widget.route.departureDate);
       _timeEditingController =
@@ -64,7 +104,19 @@ class StateCrudRoute extends State<CrudRoute> {
       try {
         _selectedFrom = cities[0].idCity;
         _selectedWhere = cities[0].idCity;
-        _selectedVehicle = vehicles[0].idVehicle;
+        //filterCities = cities.where((element) => element.idCity != _selectedFrom).toList();
+        filteredVehicle = vehicles
+            .where((element) => element.location == _selectedFrom)
+            .toList();
+
+        filteredVehicle = filteredVehicle
+            .where(
+                (element) => !upcomingRouteVehicles.contains(element.idVehicle))
+            .toList();
+
+        filteredVehicle.isEmpty
+            ? _selectedVehicle = ''
+            : _selectedVehicle = filteredVehicle[0].idVehicle;
       } catch (e) {
         print("index is over");
       }
@@ -72,6 +124,7 @@ class StateCrudRoute extends State<CrudRoute> {
       _timeEditingController = TextEditingController();
       _pricesEditingController = TextEditingController();
       valueFeatured = 0;
+      valueStatus = 0;
       idNewRoute = 'CX${DateTime.now().millisecondsSinceEpoch}';
     }
     super.initState();
@@ -79,6 +132,9 @@ class StateCrudRoute extends State<CrudRoute> {
 
   @override
   Widget build(BuildContext context) {
+    filteredVehicle.forEach((element) {
+      print(element.idVehicle);
+    });
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
@@ -206,10 +262,88 @@ class StateCrudRoute extends State<CrudRoute> {
                                               ),
                                             ))
                                         .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedFrom = value!;
-                                      });
+                                    onChanged: (value) async {
+                                      if (widget.isAddNew) {
+                                        setState(() {
+                                          _selectedFrom = value!;
+                                          //filterCities = cities.where((element) => element.idCity != _selectedFrom).toList();
+                                          filteredVehicle = vehicles
+                                              .where((element) =>
+                                                  element.location ==
+                                                  _selectedFrom)
+                                              .toList();
+
+                                          filteredVehicle = filteredVehicle
+                                              .where((element) =>
+                                                  !upcomingRouteVehicles
+                                                      .contains(
+                                                          element.idVehicle))
+                                              .toList();
+                                          _selectedVehicle =
+                                              filteredVehicle[0].idVehicle;
+                                        });
+                                      } else {
+                                        final isTrigger =
+                                            await _triggerController
+                                                .checkBookedRoute(
+                                                    widget.route.idRoute);
+
+                                        if (widget.route.statusActive != '0') {
+                                          _appSnackbar.buildSnackbar(context,
+                                              "The route is finished. Can\'t update!");
+                                          return;
+                                        }
+
+                                        if (isTrigger) {
+                                          _appSnackbar.buildSnackbar(context,
+                                              "Exist booked ticket. Can\'t update!");
+                                        } else {
+                                          setState(() {
+                                            _selectedFrom = value!;
+                                            filteredVehicle = vehicles
+                                                .where((element) =>
+                                                    element.location ==
+                                                    _selectedFrom)
+                                                .toList();
+
+                                            filteredVehicle = filteredVehicle
+                                                .where((element) =>
+                                                    !upcomingRouteVehicles
+                                                        .contains(
+                                                            element.idVehicle))
+                                                .toList();
+
+                                            if (_selectedFrom ==
+                                                widget.route.from.idCity) {
+                                              vehicles.forEach((element) {
+                                                if (element.idVehicle ==
+                                                    widget.route.idVehicle) {
+                                                  filteredVehicle.add(element);
+                                                }
+                                              });
+                                            } else {
+                                              filteredVehicle.removeWhere(
+                                                  (element) =>
+                                                      element.idVehicle ==
+                                                      widget.route.idVehicle);
+                                            }
+                                            // vehicles.forEach((element) {
+                                            //   if (element.idVehicle ==
+                                            //       _selectedVehicle) {
+                                            //     filteredVehicle.add(element);
+                                            //   }
+                                            // });
+                                            if (filteredVehicle.isEmpty) {
+                                              _appSnackbar.buildSnackbar(
+                                                  context,
+                                                  "Don\'t find suitable vehicle!");
+                                              return;
+                                            }
+                                            _selectedVehicle =
+                                                filteredVehicle[0].idVehicle;
+                                          });
+                                        }
+                                      }
                                     }),
                               ),
                             ],
@@ -252,10 +386,32 @@ class StateCrudRoute extends State<CrudRoute> {
                                               ),
                                             ))
                                         .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedWhere = value!;
-                                      });
+                                    onChanged: (value) async {
+                                      if (widget.isAddNew) {
+                                        setState(() {
+                                          _selectedWhere = value!;
+                                        });
+                                      } else {
+                                        final isTrigger =
+                                            await _triggerController
+                                                .checkBookedRoute(
+                                                    widget.route.idRoute);
+
+                                        if (widget.route.statusActive != '0') {
+                                          _appSnackbar.buildSnackbar(context,
+                                              "The route is finished. Can\'t update!");
+                                          return;
+                                        }
+
+                                        if (isTrigger) {
+                                          _appSnackbar.buildSnackbar(context,
+                                              "Exist booked ticket. Can\'t update!");
+                                        } else {
+                                          setState(() {
+                                            _selectedWhere = value!;
+                                          });
+                                        }
+                                      }
                                     }),
                               ),
                             ],
@@ -263,7 +419,7 @@ class StateCrudRoute extends State<CrudRoute> {
                         ],
                       )),
                   Container(
-                      padding: EdgeInsets.all(20),
+                      padding: EdgeInsets.all(15),
                       child: Row(
                         children: [
                           Expanded(
@@ -283,17 +439,47 @@ class StateCrudRoute extends State<CrudRoute> {
                                 TextField(
                                   onTap: () async {
                                     DateTime? foramtedDate;
-                                    foramtedDate = await showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime(2030));
+                                    if (widget.isAddNew) {
+                                      foramtedDate = await showDatePicker(
+                                          context: context,
+                                          initialDate: DateTime.now(),
+                                          firstDate: DateTime.now(),
+                                          lastDate: DateTime(2030));
 
-                                    if (foramtedDate != null) {
-                                      setState(() {
-                                        _dateEditingController.text =
-                                            '${foramtedDate?.day}/${foramtedDate?.month}/${foramtedDate?.year}';
-                                      });
+                                      if (foramtedDate != null) {
+                                        setState(() {
+                                          _dateEditingController.text =
+                                              '${foramtedDate?.day}/${foramtedDate?.month}/${foramtedDate?.year}';
+                                        });
+                                      }
+                                    } else {
+                                      final isTrigger = await _triggerController
+                                          .checkBookedRoute(
+                                              widget.route.idRoute);
+
+                                      if (widget.route.statusActive != '0') {
+                                        _appSnackbar.buildSnackbar(context,
+                                            "The route is finished. Can\'t update!");
+                                        return;
+                                      }
+
+                                      if (isTrigger) {
+                                        _appSnackbar.buildSnackbar(context,
+                                            "Exist booked ticket. Can\'t update!");
+                                      } else {
+                                        foramtedDate = await showDatePicker(
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime.now(),
+                                            lastDate: DateTime(2030));
+
+                                        if (foramtedDate != null) {
+                                          setState(() {
+                                            _dateEditingController.text =
+                                                '${foramtedDate?.day}/${foramtedDate?.month}/${foramtedDate?.year}';
+                                          });
+                                        }
+                                      }
                                     }
                                   },
                                   readOnly: true,
@@ -338,25 +524,64 @@ class StateCrudRoute extends State<CrudRoute> {
                                 TextField(
                                   readOnly: true,
                                   onTap: () async {
-                                    TimeOfDay? timeOfDay = await showTimePicker(
-                                        context: context,
-                                        initialTime: TimeOfDay.now(),
-                                        builder: (context, childWidget) {
-                                          return MediaQuery(
-                                              data: MediaQuery.of(context)
-                                                  .copyWith(
-                                                      // Using 24-Hour format
-                                                      alwaysUse24HourFormat:
-                                                          true),
-                                              // If you want 12-Hour format, just change alwaysUse24HourFormat to false or remove all the builder argument
-                                              child: childWidget!);
-                                        });
+                                    TimeOfDay? timeOfDay;
+                                    if (widget.isAddNew) {
+                                      timeOfDay = await showTimePicker(
+                                          context: context,
+                                          initialTime: TimeOfDay.now(),
+                                          builder: (context, childWidget) {
+                                            return MediaQuery(
+                                                data: MediaQuery.of(context)
+                                                    .copyWith(
+                                                        // Using 24-Hour format
+                                                        alwaysUse24HourFormat:
+                                                            true),
+                                                // If you want 12-Hour format, just change alwaysUse24HourFormat to false or remove all the builder argument
+                                                child: childWidget!);
+                                          });
 
-                                    setState(() {
-                                      _timeEditingController.text = timeOfDay
-                                          .toString()
-                                          .substring(10, 15);
-                                    });
+                                      setState(() {
+                                        _timeEditingController.text = timeOfDay
+                                            .toString()
+                                            .substring(10, 15);
+                                      });
+                                    } else {
+                                      final isTrigger = await _triggerController
+                                          .checkBookedRoute(
+                                              widget.route.idRoute);
+
+                                      if (widget.route.statusActive != '0') {
+                                        _appSnackbar.buildSnackbar(context,
+                                            "The route is finished. Can\'t update!");
+                                        return;
+                                      }
+
+                                      if (isTrigger) {
+                                        _appSnackbar.buildSnackbar(context,
+                                            "Exist booked ticket. Can\'t update!");
+                                      } else {
+                                        timeOfDay = await showTimePicker(
+                                            context: context,
+                                            initialTime: TimeOfDay.now(),
+                                            builder: (context, childWidget) {
+                                              return MediaQuery(
+                                                  data: MediaQuery.of(context)
+                                                      .copyWith(
+                                                          // Using 24-Hour format
+                                                          alwaysUse24HourFormat:
+                                                              true),
+                                                  // If you want 12-Hour format, just change alwaysUse24HourFormat to false or remove all the builder argument
+                                                  child: childWidget!);
+                                            });
+
+                                        setState(() {
+                                          _timeEditingController.text =
+                                              timeOfDay
+                                                  .toString()
+                                                  .substring(10, 15);
+                                        });
+                                      }
+                                    }
                                   },
                                   controller: _timeEditingController,
                                   //style: ,
@@ -385,7 +610,7 @@ class StateCrudRoute extends State<CrudRoute> {
                         ],
                       )),
                   Container(
-                    padding: EdgeInsets.all(20),
+                    padding: EdgeInsets.all(15),
                     child: Row(
                       children: [
                         Expanded(
@@ -413,16 +638,37 @@ class StateCrudRoute extends State<CrudRoute> {
                                   dropdownColor: Colors.white,
                                   isExpanded: true,
                                   value: _selectedVehicle,
-                                  items: vehicles
+                                  items: filteredVehicle
                                       .map((e) => DropdownMenuItem(
                                             value: e.idVehicle,
                                             child: Text(e.idVehicle),
                                           ))
                                       .toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedVehicle = value!;
-                                    });
+                                  onChanged: (value) async {
+                                    if (widget.isAddNew) {
+                                      setState(() {
+                                        _selectedVehicle = value!;
+                                      });
+                                    } else {
+                                      final isTrigger = await _triggerController
+                                          .checkBookedRoute(
+                                              widget.route.idRoute);
+
+                                      if (widget.route.statusActive != '0') {
+                                        _appSnackbar.buildSnackbar(context,
+                                            "The route is finished. Can\'t update!");
+                                        return;
+                                      }
+
+                                      if (isTrigger) {
+                                        _appSnackbar.buildSnackbar(context,
+                                            "Exist booked ticket. Can\'t update!");
+                                      } else {
+                                        setState(() {
+                                          _selectedVehicle = value!;
+                                        });
+                                      }
+                                    }
                                   }),
                             ),
                           ],
@@ -435,7 +681,7 @@ class StateCrudRoute extends State<CrudRoute> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Prices',
+                                'Prices(VND)',
                                 style: TextStyle(
                                     fontFamily: 'Roboto bold',
                                     fontSize: 18,
@@ -445,8 +691,14 @@ class StateCrudRoute extends State<CrudRoute> {
                                 height: 10,
                               ),
                               TextField(
+                                readOnly: widget.isAddNew
+                                    ? false
+                                    : widget.route.statusActive != '0'
+                                        ? true
+                                        : false,
                                 controller: _pricesEditingController,
                                 //style: ,
+
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                   //prefixIcon: Icon(Icons.done),
@@ -458,6 +710,7 @@ class StateCrudRoute extends State<CrudRoute> {
                                   //   'Prices',
                                   //   style: TextStyle(color: AppColor.mainColor),
                                   // ),
+
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(5),
                                   ),
@@ -477,7 +730,8 @@ class StateCrudRoute extends State<CrudRoute> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.all(20),
+                    padding:
+                        const EdgeInsets.only(left: 20, right: 20, bottom: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -489,12 +743,18 @@ class StateCrudRoute extends State<CrudRoute> {
                               color: Colors.grey),
                         ),
                         Container(
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                          // height: 50,
+                          padding: EdgeInsets.only(top: 5, bottom: 5),
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  width: 2, color: AppColor.mainColor),
+                              borderRadius: BorderRadius.circular(4)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Expanded(
                                   child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Radio(
                                       activeColor: Colors.redAccent,
@@ -516,6 +776,7 @@ class StateCrudRoute extends State<CrudRoute> {
                               )),
                               Expanded(
                                   child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Radio(
                                       activeColor: Colors.greenAccent,
@@ -541,8 +802,129 @@ class StateCrudRoute extends State<CrudRoute> {
                       ],
                     ),
                   ),
+                  widget.isAddNew
+                      ? Container()
+                      : Container(
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Route Status',
+                                style: TextStyle(
+                                    fontFamily: 'Roboto bold',
+                                    fontSize: 18,
+                                    color: Colors.grey),
+                              ),
+                              Container(
+                                //height: 50,
+                                padding: EdgeInsets.only(top: 5, bottom: 5),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        width: 2, color: AppColor.mainColor),
+                                    borderRadius: BorderRadius.circular(4)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                        child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Radio(
+                                            activeColor: Colors.yellow,
+                                            value: 0,
+                                            groupValue: valueStatus,
+                                            onChanged: (Value) {
+                                              if (widget.route.statusActive !=
+                                                  '0') {
+                                                _appSnackbar.buildSnackbar(
+                                                    context,
+                                                    "The route is finished. Can\'t update!");
+                                                return;
+                                              }
+                                              setState(() {
+                                                valueStatus = Value!;
+                                              });
+                                            }),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        const Text(
+                                          'Upcomming',
+                                          style: TextStyle(fontSize: 18),
+                                        )
+                                      ],
+                                    )),
+                                    Expanded(
+                                        child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Radio(
+                                            activeColor: Colors.greenAccent,
+                                            value: 1,
+                                            groupValue: valueStatus,
+                                            onChanged: (Value) {
+                                              if (valueStatus != 0) {
+                                                _appSnackbar.buildSnackbar(
+                                                    context,
+                                                    "The route is finished. Can\'t update!");
+                                                return;
+                                              }
+                                              setState(() {
+                                                valueStatus = Value!;
+                                              });
+                                            }),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        const Text(
+                                          'Complete',
+                                          style: TextStyle(fontSize: 18),
+                                        )
+                                      ],
+                                    )),
+                                    Expanded(
+                                        child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Radio(
+                                            activeColor: Colors.redAccent,
+                                            value: 2,
+                                            groupValue: valueStatus,
+                                            onChanged: (Value) {
+                                              if (valueStatus != 0) {
+                                                _appSnackbar.buildSnackbar(
+                                                    context,
+                                                    "The route is finished. Can\'t update!");
+                                                return;
+                                              }
+                                              setState(() {
+                                                valueStatus = Value!;
+                                              });
+                                            }),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        const Text(
+                                          'Cancel',
+                                          style: TextStyle(fontSize: 18),
+                                        )
+                                      ],
+                                    )),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                   Container(
-                    padding: EdgeInsets.only(top: 20),
+                    padding: EdgeInsets.only(top: 10),
                     width: double.infinity,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -560,6 +942,15 @@ class StateCrudRoute extends State<CrudRoute> {
                                 // ignore: use_build_context_synchronously
                                 _appSnackbar.buildSnackbar(context,
                                     'Please fill in route\'s prices field!');
+                                Navigator.of(context).pop();
+                                return;
+                              }
+
+                              if (_selectedVehicle == '') {
+                                // ignore: use_build_context_synchronously
+                                _appSnackbar.buildSnackbar(
+                                    context, 'Don\'t find a suitable vehicle!');
+                                Navigator.of(context).pop();
                                 return;
                               }
 
@@ -573,7 +964,10 @@ class StateCrudRoute extends State<CrudRoute> {
                                   departureTime: _timeEditingController.text,
                                   idVehicle: _selectedVehicle,
                                   prices: _pricesEditingController.text,
-                                  featured: valueFeatured.toString());
+                                  featured: valueFeatured.toString(),
+                                  statusActive: widget.isAddNew
+                                      ? '0'
+                                      : valueStatus.toString());
 
                               late bool isSuccessed;
                               isSuccessed =
@@ -581,6 +975,11 @@ class StateCrudRoute extends State<CrudRoute> {
 
                               Navigator.of(context).pop();
                               if (isSuccessed == true) {
+                                await _uploadController
+                                    .updateStatusTicket(newRoute);
+                                if (valueStatus == 1)
+                                  await _uploadController
+                                      .updateLocationVehicle(newRoute);
                                 Get.offAll(ScaffoldWithNavigationRail(
                                   selectedIndex: 3,
                                 ));
@@ -588,7 +987,7 @@ class StateCrudRoute extends State<CrudRoute> {
                                     context, 'Successfully!');
                               } else {
                                 _appSnackbar.buildSnackbar(
-                                    context, 'Update fail');
+                                    context, 'Upload fail!');
                               }
                             },
                             style: ElevatedButton.styleFrom(

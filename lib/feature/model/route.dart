@@ -7,15 +7,16 @@ class Transitions {
   late String from;
   late String where;
   late String featured = '';
+  late String statusActive;
 
-  Transitions({
-    required this.keyRoute,
-    required this.prices,
-    required this.idVehicle,
-    required this.departureDate,
-    required this.departureTime,
-    required this.from,
-    required this.where,
-    required this.featured,
-  });
+  Transitions(
+      {required this.keyRoute,
+      required this.prices,
+      required this.idVehicle,
+      required this.departureDate,
+      required this.departureTime,
+      required this.from,
+      required this.where,
+      required this.featured,
+      required this.statusActive});
 }

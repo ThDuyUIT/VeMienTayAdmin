@@ -52,7 +52,8 @@ class InsertData {
       await refChild.set({
         'namevehicle': newVehicle.name,
         'capacity': newVehicle.capacity,
-        'imgvehicle': newVehicle.urlImage
+        'imgvehicle': newVehicle.urlImage,
+        'location': newVehicle.location
       });
       return true;
     } catch (e) {
@@ -87,7 +88,8 @@ class InsertData {
         'endpoint': newRoute.where,
         'featuredroute': newRoute.featured,
         'priceticket': newRoute.prices,
-        'startpoint': newRoute.from
+        'startpoint': newRoute.from,
+        'statusactive': newRoute.statusActive
       });
       return true;
     } catch (e) {

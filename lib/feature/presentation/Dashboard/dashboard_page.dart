@@ -3,6 +3,7 @@ import 'package:booking_transition_admin/feature/controller/statistic_controller
 import 'package:booking_transition_admin/feature/presentation/Dashboard/item_dashboard_data.dart';
 import 'package:booking_transition_admin/feature/presentation/Dashboard/item_table_summay.dart';
 import 'package:booking_transition_admin/feature/presentation/scaffold_navigationrail.dart';
+import 'package:booking_transition_admin/main.dart';
 import 'package:booking_transition_admin/untils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,9 +25,15 @@ class StateDashBoard extends State<DashBoard> {
   late String percentEmpty;
   late String predictSales;
   List<DashboardRowData> dashboardRow = [];
+  //late double widthScreen;
+  late double textSize;
+  late double distanceElement;
 
   @override
   Widget build(BuildContext context) {
+    // setState(() {
+    //   widthScreen = MyApp.widthScreen;
+    // });
     return Container(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -204,88 +211,175 @@ class StateDashBoard extends State<DashBoard> {
             SizedBox(
               height: 20,
             ),
-            Container(
-              width: double.infinity,
-              //height: 30,
-              child: DataTable(
-                  dataRowMaxHeight: 0,
-                  dataRowMinHeight: 0,
-                  headingRowColor: MaterialStateProperty.resolveWith(
-                      (states) => AppColor.mainColor),
-                  columns: const [
-                    DataColumn(
-                        label: Text(
-                      'Number',
-                      style: TextStyle(
-                          fontFamily: 'Roboto bold', color: Colors.white),
-                    )),
-                    DataColumn(
-                        label: Text('ID Vehicle',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                    DataColumn(
-                        label: Text('Capacity',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                    DataColumn(
-                        label: Text('From',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                    DataColumn(
-                        label: Text('Where',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                    DataColumn(
-                        label: Text('Prices',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                    DataColumn(
-                        label: Text('Departure Date',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                    DataColumn(
-                        label: Text('Departure Time',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                    DataColumn(
-                        label: Text('Booked Seats',
-                            style: TextStyle(
-                                //fontFamily: 'Roboto bold',
-                                color: Colors.white))),
-                  ],
-                  rows: const [
-                    DataRow(cells: [
-                      DataCell(Text('1')),
-                      DataCell(Text('64F1-9019')),
-                      DataCell(Text('16')),
-                      DataCell(Text('Vinh Long')),
-                      DataCell(Text('Tp Ho Chi Minh')),
-                      DataCell(Text('120000')),
-                      DataCell(Text('26/8/2023')),
-                      DataCell(Text('03:00')),
-                      DataCell(Text('2')),
-                    ])
-                  ]),
-            ),
+            // Container(
+            //   width: double.infinity,
+            //   //height: 30,
+            //   child: FittedBox(
+            //     child: DataTable(
+            //         dataRowMaxHeight: 0,
+            //         dataRowMinHeight: 0,
+            //         headingRowColor: MaterialStateProperty.resolveWith(
+            //             (states) => AppColor.mainColor),
+            //         // headingTextStyle: widthScreen < 1296
+            //         //     ? TextStyle(fontSize: 10)
+            //         //     : TextStyle(fontSize: 14),
+            //         // dataTextStyle: MyApp.widthScreen < 1296
+            //         //     ? TextStyle(fontSize: 10)
+            //         //     : TextStyle(fontSize: 14),
+            //         columns: const [
+            //           DataColumn(
+            //               label: Text(
+            //             'Number',
+            //             style: TextStyle(
+            //                 fontFamily: 'Roboto bold', color: Colors.white),
+            //           )),
+            //           DataColumn(
+            //               label: Text('ID Vehicle',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //           DataColumn(
+            //               label: Text('Capacity',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //           DataColumn(
+            //               label: Text('From',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //           DataColumn(
+            //               label: Text('Where',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //           DataColumn(
+            //               label: Text('Prices',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //           DataColumn(
+            //               label: Text('Departure Date',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //           DataColumn(
+            //               label: Text('Departure Time',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //           DataColumn(
+            //               label: Text('Booked Seats',
+            //                   style: TextStyle(
+            //                       //fontFamily: 'Roboto bold',
+            //                       color: Colors.white))),
+            //         ],
+            //         rows: const [
+            //           DataRow(cells: [
+            //             DataCell(Text('1')),
+            //             DataCell(Text('64F1-9019')),
+            //             DataCell(Text('16')),
+            //             DataCell(Text('Vinh Long')),
+            //             DataCell(Text('Tp Ho Chi Minh')),
+            //             DataCell(Text('120000')),
+            //             DataCell(Text('26/8/2023')),
+            //             DataCell(Text('03:00')),
+            //             DataCell(Text('2')),
+            //           ])
+            //         ]),
+            //   ),
+            // ),
             FutureBuilder(
                 future: _loadingController.setDashboardData(pickedMonth),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Container(
-                      padding: EdgeInsets.all(20),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColor.mainColor,
-                        ),
+                      width: double.infinity,
+                      //height: 30,
+                      child: FittedBox(
+                        child: DataTable(
+                            dataRowMaxHeight: 0,
+                            dataRowMinHeight: 0,
+                            headingRowColor: MaterialStateProperty.resolveWith(
+                                (states) => AppColor.mainColor),
+                            // headingTextStyle: widthScreen < 1296
+                            //     ? TextStyle(fontSize: 10)
+                            //     : TextStyle(fontSize: 14),
+                            // dataTextStyle: MyApp.widthScreen < 1296
+                            //     ? TextStyle(fontSize: 10)
+                            //     : TextStyle(fontSize: 14),
+                            columns: const [
+                              DataColumn(
+                                  label: Text(
+                                'Number',
+                                style: TextStyle(
+                                    fontFamily: 'Roboto bold',
+                                    color: Colors.white),
+                              )),
+                              DataColumn(
+                                  label: Text('ID Vehicle',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text('Capacity',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text('From',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text('Where',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text('Prices',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text('Date',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text('Time',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                              DataColumn(
+                                  label: Text('Booked',
+                                      style: TextStyle(
+                                          //fontFamily: 'Roboto bold',
+                                          color: Colors.white))),
+                            ],
+                            rows: const [
+                              DataRow(cells: [
+                                DataCell(Text('Number')),
+                                DataCell(Text('ID Vehicle')),
+                                DataCell(Text('Capacity')),
+                                DataCell(Text('From')),
+                                DataCell(Text('Where')),
+                                DataCell(Text('Prices')),
+                                DataCell(Text('Date')),
+                                DataCell(Text('Time')),
+                                DataCell(Text('Booked')),
+                              ])
+                            ]),
                       ),
                     );
+                    // Container(
+                    //   padding: EdgeInsets.all(20),
+                    //   child: Center(
+                    //     child: CircularProgressIndicator(
+                    //       color: AppColor.mainColor,
+                    //     ),
+                    //   ),
+                    // );
                   } else if (snapshot.hasError) {
                     return const Center(
                       child: Text(
@@ -297,15 +391,16 @@ class StateDashBoard extends State<DashBoard> {
                     dashboardRow = snapshot.data;
                     if (dashboardRow.isNotEmpty) {
                       int index = 0;
-                      return Expanded(
-                          child: SingleChildScrollView(
-                        child: Container(
-                          width: double.infinity,
+                      return Container(
+                        width: double.infinity,
+                        child: FittedBox(
                           child: DataTable(
-                              // headingRowColor:
-                              //     MaterialStateProperty.resolveWith(
-                              //         (states) => AppColor.mainColor),
-                              headingRowHeight: 0,
+                              //headingRowHeight: 0,
+                              dataRowMaxHeight: 0,
+                              dataRowMinHeight: 0,
+                              headingRowColor:
+                                  MaterialStateProperty.resolveWith(
+                                      (states) => AppColor.mainColor),
                               columns: const [
                                 DataColumn(
                                     label: Text(
@@ -363,12 +458,216 @@ class StateDashBoard extends State<DashBoard> {
                                   DataCell(Text(e.capacity)),
                                   DataCell(Text(e.from)),
                                   DataCell(Text(e.where)),
-                                  DataCell(Text(e.prices)),
+                                  DataCell(Text(NumberFormat.decimalPattern()
+                                      .format(int.parse(e.prices))
+                                      .toString())),
                                   DataCell(Text(e.departureDate)),
                                   DataCell(Text(e.departureTime)),
                                   DataCell(Text(e.bookedSeat)),
                                 ]);
                               }).toList()),
+                        ),
+                      );
+                    } else {
+                      //print(snapshot.l)
+                      return Container(
+                        width: double.infinity,
+                        //height: 30,
+                        child: FittedBox(
+                          child: DataTable(
+                              dataRowMaxHeight: 0,
+                              dataRowMinHeight: 0,
+                              headingRowColor:
+                                  MaterialStateProperty.resolveWith(
+                                      (states) => AppColor.mainColor),
+                              // headingTextStyle: widthScreen < 1296
+                              //     ? TextStyle(fontSize: 10)
+                              //     : TextStyle(fontSize: 14),
+                              // dataTextStyle: MyApp.widthScreen < 1296
+                              //     ? TextStyle(fontSize: 10)
+                              //     : TextStyle(fontSize: 14),
+                              columns: const [
+                                DataColumn(
+                                    label: Text(
+                                  'Number',
+                                  style: TextStyle(
+                                      fontFamily: 'Roboto bold',
+                                      color: Colors.white),
+                                )),
+                                DataColumn(
+                                    label: Text('ID Vehicle',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Capacity',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('From',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Where',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Prices',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Date',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Time',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Booked',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                              ],
+                              rows: const [
+                                DataRow(cells: [
+                                  DataCell(Text('Number')),
+                                  DataCell(Text('ID Vehicle')),
+                                  DataCell(Text('Capacity')),
+                                  DataCell(Text('From')),
+                                  DataCell(Text('Where')),
+                                  DataCell(Text('Prices')),
+                                  DataCell(Text('Date')),
+                                  DataCell(Text('Time')),
+                                  DataCell(Text('Booked')),
+                                ])
+                              ]),
+                        ),
+                      );
+                      // Container(
+                      //   padding: const EdgeInsets.only(top: 20),
+                      //   child: const Center(
+                      //     child: Text(
+                      //       'Data don\'t exist',
+                      //       style: TextStyle(fontSize: 20),
+                      //     ),
+                      //   ),
+                      // );
+                    }
+                  }
+                }),
+            //data row
+            FutureBuilder(
+                future: _loadingController.setDashboardData(pickedMonth),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Container(
+                      padding: EdgeInsets.all(20),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColor.mainColor,
+                        ),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return const Center(
+                      child: Text(
+                        'Error loading data',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    );
+                  } else {
+                    dashboardRow = snapshot.data;
+                    if (dashboardRow.isNotEmpty) {
+                      int index = 0;
+                      return Expanded(
+                          child: SingleChildScrollView(
+                        child: Container(
+                          width: double.infinity,
+                          child: FittedBox(
+                            child: DataTable(
+                                // headingRowColor:
+                                //     MaterialStateProperty.resolveWith(
+                                //         (states) => AppColor.mainColor),
+                                // headingTextStyle: widthScreen < 1296
+                                //     ? TextStyle(fontSize: 10)
+                                //     : TextStyle(fontSize: 14),
+                                // dataTextStyle: MyApp.widthScreen < 1296
+                                //     ? TextStyle(fontSize: 10)
+                                //     : TextStyle(fontSize: 14),
+                                headingRowHeight: 0,
+                                columns: const [
+                                  DataColumn(
+                                      label: Text(
+                                    'Number',
+                                    style: TextStyle(
+                                        fontFamily: 'Roboto bold',
+                                        color: Colors.white),
+                                  )),
+                                  DataColumn(
+                                      label: Text('ID Vehicle',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                  DataColumn(
+                                      label: Text('Capacity',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                  DataColumn(
+                                      label: Text('From',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                  DataColumn(
+                                      label: Text('Where',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                  DataColumn(
+                                      label: Text('Prices',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                  DataColumn(
+                                      label: Text('Departure Date',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                  DataColumn(
+                                      label: Text('Departure Time',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                  DataColumn(
+                                      label: Text('Booked Seats',
+                                          style: TextStyle(
+                                              //fontFamily: 'Roboto bold',
+                                              color: Colors.white))),
+                                ],
+                                rows: dashboardRow.map((e) {
+                                  index += 1;
+                                  return DataRow(cells: [
+                                    DataCell(Text(index.toString())),
+                                    DataCell(Text(e.idVehicle)),
+                                    DataCell(Text(e.capacity)),
+                                    DataCell(Text(e.from)),
+                                    DataCell(Text(e.where)),
+                                    DataCell(Text(NumberFormat.decimalPattern()
+                                        .format(int.parse(e.prices))
+                                        .toString())),
+                                    DataCell(Text(e.departureDate)),
+                                    DataCell(Text(e.departureTime)),
+                                    DataCell(Text(e.bookedSeat)),
+                                  ]);
+                                }).toList()),
+                          ),
                         ),
                       ));
                     } else {

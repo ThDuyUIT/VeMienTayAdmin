@@ -2,8 +2,10 @@ import 'package:booking_transition_admin/basic_component/circleprogressbar.dart'
 import 'package:booking_transition_admin/basic_component/mycupertinodialog.dart';
 import 'package:booking_transition_admin/basic_component/snackbar.dart';
 import 'package:booking_transition_admin/feature/controller/remove_controller.dart';
+import 'package:booking_transition_admin/feature/controller/trigger_controller.dart';
 
 import 'package:booking_transition_admin/feature/controller/upload_controller.dart';
+import 'package:booking_transition_admin/feature/model/city.dart';
 import 'package:booking_transition_admin/feature/model/vehicle.dart';
 import 'package:booking_transition_admin/feature/presentation/Vehicle/item_vehicle_data.dart';
 import 'package:booking_transition_admin/feature/presentation/scaffold_navigationrail.dart';
@@ -30,16 +32,27 @@ class StateEditVehicle extends State<CrudVehicle> {
   TextEditingController? _idVehicleEditingController;
   TextEditingController? _nameVehicleEditingController;
   TextEditingController? _capcityVehicleEditingController;
+  late String totalSeats;
   bool imageFromFile = false;
   late Uint8List imageFile;
   final _appSnackbar = AppSnackbar();
+  static late bool isActive;
+  static TriggerController triggerController = TriggerController();
 
   final _cupertinoDialog = MyCupertinoDialog();
   final _removeController = RemoveController();
+  List<String> typesOfVehicle = ['16', '29'];
+  String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+  static List<City> location = [];
+  late String currentLocation;
+
+  static List<String> upcomingRouteVehicles = [];
 
   @override
   void initState() {
     if (widget.isAddNew == false) {
+      totalSeats = widget.vehicle.capacity;
+      currentLocation = widget.vehicle.currentLocation;
       _idVehicleEditingController =
           TextEditingController(text: widget.vehicle.idVehicle);
       _nameVehicleEditingController =
@@ -47,6 +60,8 @@ class StateEditVehicle extends State<CrudVehicle> {
       _capcityVehicleEditingController =
           TextEditingController(text: widget.vehicle.capacity);
     } else {
+      totalSeats = '16';
+      currentLocation = location[0].idCity;
       _nameVehicleEditingController = TextEditingController();
       _capcityVehicleEditingController = TextEditingController();
       _idVehicleEditingController = TextEditingController();
@@ -56,6 +71,7 @@ class StateEditVehicle extends State<CrudVehicle> {
 
   @override
   Widget build(BuildContext context) {
+    print(location.length);
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -162,12 +178,12 @@ class StateEditVehicle extends State<CrudVehicle> {
                                         width: 500,
                                         height: 300,
                                         image: NetworkImage(
-                                            widget.vehicle.urlImage))),
+                                            '${widget.vehicle.urlImage}&timestamp=$timestamp'))),
                         const SizedBox(
                           height: 20,
                         ),
                         Container(
-                          padding: EdgeInsets.only(bottom: 20),
+                          //padding: EdgeInsets.only(bottom: 20),
                           child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColor.mainColor,
@@ -197,226 +213,481 @@ class StateEditVehicle extends State<CrudVehicle> {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: TextField(
-                                    controller: _nameVehicleEditingController,
-                                    decoration: InputDecoration(
-                                      hintText: 'Enter vehicle\'s name',
-                                      hintStyle:
-                                          TextStyle(color: AppColor.mainColor),
-                                      //icon: const Icon(Icons.account_circle_outlined),
-                                      label: Text(
-                                        'Name',
-                                        style: TextStyle(
-                                            color: AppColor.mainColor),
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        // Change the default border color
-                                        borderRadius: BorderRadius.circular(5),
-                                        borderSide: BorderSide(
-                                            color: AppColor.mainColor,
-                                            width: 2), // Change color and width
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                    child: widget.isAddNew || !isActive
+                                        ? Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Name',
+                                                style: TextStyle(
+                                                    fontFamily: 'Roboto bold',
+                                                    fontSize: 18,
+                                                    color: Colors.grey),
+                                              ),
+                                              TextField(
+                                                controller:
+                                                    _nameVehicleEditingController,
+                                                decoration: InputDecoration(
+                                                  hintText:
+                                                      'Enter vehicle\'s name',
+                                                  hintStyle: TextStyle(
+                                                      color:
+                                                          AppColor.mainColor),
+                                                  //icon: const Icon(Icons.account_circle_outlined),
+                                                  // label: Text(
+                                                  //   'Name',
+                                                  //   style: TextStyle(
+                                                  //       color:
+                                                  //           AppColor.mainColor),
+                                                  // ),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                  ),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    // Change the default border color
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    borderSide: BorderSide(
+                                                        color:
+                                                            AppColor.mainColor,
+                                                        width:
+                                                            2), // Change color and width
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Name',
+                                                style: TextStyle(
+                                                    fontFamily: 'Roboto bold',
+                                                    fontSize: 18,
+                                                    color: Colors.grey),
+                                              ),
+                                              TextField(
+                                                readOnly: true,
+                                                controller:
+                                                    _nameVehicleEditingController,
+                                                decoration: InputDecoration(
+                                                  hintText:
+                                                      'Enter vehicle\'s name',
+                                                  hintStyle: TextStyle(
+                                                      color:
+                                                          AppColor.mainColor),
+                                                  //icon: const Icon(Icons.account_circle_outlined),
+                                                  // label: Text(
+                                                  //   'Name',
+                                                  //   style: TextStyle(
+                                                  //       color:
+                                                  //           AppColor.mainColor),
+                                                  // ),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                  ),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    // Change the default border color
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    borderSide: BorderSide(
+                                                        color:
+                                                            AppColor.mainColor,
+                                                        width:
+                                                            2), // Change color and width
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )),
                                 const SizedBox(
                                   width: 20,
                                 ),
                                 Expanded(
-                                  child: TextField(
-                                    controller:
-                                        _capcityVehicleEditingController,
-                                    //style: ,
-                                    keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(
-                                      hintText: 'Enter capacity',
-                                      hintStyle:
-                                          TextStyle(color: AppColor.mainColor),
-                                      //icon: const Icon(Icons.account_circle_outlined),
-                                      label: Text(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
                                         'Capacity',
                                         style: TextStyle(
-                                            color: AppColor.mainColor),
+                                            fontFamily: 'Roboto bold',
+                                            fontSize: 18,
+                                            color: Colors.grey),
                                       ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(5),
+                                      Container(
+                                        padding: EdgeInsets.only(
+                                            top: 4, left: 10, right: 10),
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(4)),
+                                            border: Border.all(
+                                                width: 2,
+                                                color: AppColor.mainColor)),
+                                        child: DropdownButton(
+                                            dropdownColor: Colors.white,
+                                            isExpanded: true,
+                                            value: totalSeats,
+                                            items: typesOfVehicle
+                                                .map((e) => DropdownMenuItem(
+                                                      value: e,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 10),
+                                                        child: Text(e),
+                                                      ),
+                                                    ))
+                                                .toList(),
+                                            onChanged: (value) {
+                                              if (widget.isAddNew) {
+                                                setState(() {
+                                                  totalSeats = value!;
+                                                });
+                                              } else {
+                                                if (isActive) {
+                                                  _appSnackbar.buildSnackbar(
+                                                      context,
+                                                      "Exist active route. Can\'t update!");
+                                                } else {
+                                                  setState(() {
+                                                    totalSeats = value!;
+                                                  });
+                                                }
+                                              }
+                                            }),
                                       ),
-                                      enabledBorder: OutlineInputBorder(
-                                        // Change the default border color
-                                        borderRadius: BorderRadius.circular(5),
-                                        borderSide: BorderSide(
-                                            color: AppColor.mainColor,
-                                            width: 2), // Change color and width
-                                      ),
-                                    ),
+                                    ],
                                   ),
+                                  // TextField(
+                                  //   controller:
+                                  //       _capcityVehicleEditingController,
+                                  //   //style: ,
+                                  //   keyboardType: TextInputType.number,
+                                  //   decoration: InputDecoration(
+                                  //     hintText: 'Enter capacity',
+                                  //     hintStyle:
+                                  //         TextStyle(color: AppColor.mainColor),
+                                  //     //icon: const Icon(Icons.account_circle_outlined),
+                                  //     label: Text(
+                                  //       'Capacity',
+                                  //       style: TextStyle(
+                                  //           color: AppColor.mainColor),
+                                  //     ),
+                                  //     border: OutlineInputBorder(
+                                  //       borderRadius: BorderRadius.circular(5),
+                                  //     ),
+                                  //     enabledBorder: OutlineInputBorder(
+                                  //       // Change the default border color
+                                  //       borderRadius: BorderRadius.circular(5),
+                                  //       borderSide: BorderSide(
+                                  //           color: AppColor.mainColor,
+                                  //           width: 2), // Change color and width
+                                  //     ),
+                                  //   ),
+                                  // ),
                                 ),
                               ],
                             )),
                         Container(
-                          padding: EdgeInsets.only(top: 20),
-                          width: double.infinity,
+                          padding: EdgeInsets.only(left: 20),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ElevatedButton.icon(
-                                  onPressed: () async {
-                                    print(_idVehicleEditingController!.text);
-                                    final _uploadController =
-                                        UploadController();
-                                    late String urlImage;
-                                    final _appCircleprogressbar =
-                                        AppCircleprogressbar();
-                                    // ignore: use_build_context_synchronously
-                                    _appCircleprogressbar
-                                        .buildCirclerprogessbar(context);
-                                    if (imageFromFile) {
-                                      urlImage =
-                                          await _uploadController.uploadImage(
-                                              imageFile,
-                                              // 1600,
-                                              // 900,
-                                              'XE',
-                                              widget.isAddNew == true
-                                                  ? _idVehicleEditingController!
-                                                      .text
-                                                  : widget.vehicle.idVehicle);
-                                    }
-
-                                    if (_nameVehicleEditingController!
-                                        .text.isEmpty) {
-                                      // ignore: use_build_context_synchronously
-                                      _appSnackbar.buildSnackbar(context,
-                                          'Please fill in vehicle\'s name field!');
-                                      return;
-                                    }
-
-                                    if (_capcityVehicleEditingController!
-                                        .text.isEmpty) {
-                                      // ignore: use_build_context_synchronously
-                                      _appSnackbar.buildSnackbar(context,
-                                          'Please fill in vehicle\'s capacity field!');
-                                      return;
-                                    }
-
-                                    Vehicle newVehicle = Vehicle(
-                                        idVehicle: widget.isAddNew == true
-                                            ? _idVehicleEditingController!.text
-                                            : widget.vehicle.idVehicle,
-                                        name:
-                                            _nameVehicleEditingController!.text,
-                                        capacity: int.parse(
-                                            _capcityVehicleEditingController!
-                                                .text),
-                                        urlImage: widget.isAddNew == true
-                                            ? urlImage
-                                            : widget.vehicle.urlImage);
-
-                                    late bool isSuccessed;
-                                    isSuccessed = await _uploadController
-                                        .updateVehicle(newVehicle);
-                                    //       .updateVehicle(newVehicle);
-                                    // if (widget.isAddNew == false) {
-                                    //   isSuccessed = await _uploadController
-                                    //       .updateVehicle(newVehicle);
-                                    // } else {
-                                    //   isSuccessed = await _uploadController
-                                    //       .updateVehicle(newVehicle);
-                                    // }
-
-                                    Navigator.of(context).pop();
-                                    if (isSuccessed == true) {
-                                      Get.offAll(ScaffoldWithNavigationRail(
-                                        selectedIndex: 1,
-                                      ));
-                                      _appSnackbar.buildSnackbar(
-                                          context, 'Successfully!');
-                                    } else {
-                                      _appSnackbar.buildSnackbar(
-                                          context, 'Update fail');
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.greenAccent,
-                                      foregroundColor: Colors.white),
-                                  icon: const Icon(
-                                    Icons.save,
-                                    size: 25,
-                                  ),
-                                  label: const Text(
-                                    'Save',
-                                    style: TextStyle(
-                                        fontFamily: 'Roboto bold',
-                                        fontSize: 18),
-                                  )),
-                              const SizedBox(
-                                width: 20,
-                              ),
-                              widget.isAddNew
-                                  ? const SizedBox()
-                                  : ElevatedButton.icon(
-                                      onPressed: () async {
-                                        bool shouldVerify =
-                                            await _cupertinoDialog
-                                                .createCupertinoDialog(
-                                                    AppColor.mainColor,
-                                                    'Delete',
-                                                    'Delete this city?',
-                                                    context);
-
-                                        if (shouldVerify) {
-                                          try {
-                                            final _appCircleprogressbar =
-                                                AppCircleprogressbar();
-                                            _appCircleprogressbar
-                                                .buildCirclerprogessbar(
-                                                    context);
-
-                                            final isRemove =
-                                                await _removeController
-                                                    .removeAVehicle(widget
-                                                        .vehicle.idVehicle);
-
-                                            Navigator.of(context).pop();
-
-                                            if (isRemove) {
-                                              _appSnackbar.buildSnackbar(
-                                                  context,
-                                                  'Delete Successfully!');
-
-                                              Get.offAll(
-                                                  ScaffoldWithNavigationRail(
-                                                      selectedIndex: 1));
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Location',
+                                      style: TextStyle(
+                                          fontFamily: 'Roboto bold',
+                                          fontSize: 18,
+                                          color: Colors.grey),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(right: 15),
+                                      padding:
+                                          EdgeInsets.only(left: 10, right: 10),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(4)),
+                                          border: Border.all(
+                                              width: 2,
+                                              color: AppColor.mainColor)),
+                                      child: DropdownButton(
+                                          dropdownColor: Colors.white,
+                                          isExpanded: true,
+                                          value: currentLocation,
+                                          items: location
+                                              .map((e) => DropdownMenuItem(
+                                                    value: e.idCity,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 10),
+                                                      child: Text(e.nameCity),
+                                                    ),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (value) {
+                                            if (widget.isAddNew) {
+                                              setState(() {
+                                                currentLocation = value!;
+                                              });
                                             } else {
-                                              _appSnackbar.buildSnackbar(
-                                                  context,
-                                                  'Delete fail! Exist active route.');
+                                              if (upcomingRouteVehicles
+                                                  .contains(widget
+                                                      .vehicle.idVehicle)) {
+                                                _appSnackbar.buildSnackbar(
+                                                    context,
+                                                    "The vehicle is being used. Can\'t update!");
+                                              } else {
+                                                setState(() {
+                                                  currentLocation = value!;
+                                                });
+                                              }
                                             }
-                                          } catch (e) {
-                                            _appSnackbar.buildSnackbar(context,
-                                                'Delete fail! Exist active route.');
-                                          }
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.redAccent,
-                                          foregroundColor: Colors.white),
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        size: 25,
-                                      ),
-                                      label: const Text(
-                                        'Delete',
-                                        style: TextStyle(
-                                            fontFamily: 'Roboto bold',
-                                            fontSize: 18),
-                                      )),
+                                          }),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    padding: EdgeInsets.only(top: 20),
+                                    width: double.infinity,
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          height: 20,
+                                        ),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            ElevatedButton.icon(
+                                                onPressed: () async {
+                                                  print(
+                                                      _idVehicleEditingController!
+                                                          .text);
+                                                  final _uploadController =
+                                                      UploadController();
+                                                  late String urlImage;
+
+                                                  if (imageFromFile) {
+                                                    urlImage = await _uploadController
+                                                        .uploadImageVehicle(
+                                                            imageFile,
+                                                            1600,
+                                                            900,
+                                                            'XE',
+                                                            widget.isAddNew ==
+                                                                    true
+                                                                ? _idVehicleEditingController!
+                                                                    .text
+                                                                : widget.vehicle
+                                                                    .idVehicle);
+                                                  } else if (widget.isAddNew) {
+                                                    _appSnackbar.buildSnackbar(
+                                                        context,
+                                                        'Please choose vehicle\'s image!');
+                                                    //Navigator.of(context).pop();
+                                                    return;
+                                                  }
+
+                                                  if (_nameVehicleEditingController!
+                                                      .text.isEmpty) {
+                                                    // ignore: use_build_context_synchronously
+                                                    _appSnackbar.buildSnackbar(
+                                                        context,
+                                                        'Please fill in vehicle\'s name field!');
+                                                    return;
+                                                  }
+
+                                                  // if (_capcityVehicleEditingController!
+                                                  //     .text.isEmpty) {
+                                                  //   // ignore: use_build_context_synchronously
+                                                  //   _appSnackbar.buildSnackbar(context,
+                                                  //       'Please fill in vehicle\'s capacity field!');
+                                                  //   return;
+                                                  // }
+
+                                                  Vehicle newVehicle = Vehicle(
+                                                      idVehicle:
+                                                          widget.isAddNew ==
+                                                                  true
+                                                              ? _idVehicleEditingController!
+                                                                  .text
+                                                              : widget.vehicle
+                                                                  .idVehicle,
+                                                      name:
+                                                          _nameVehicleEditingController!
+                                                              .text,
+                                                      capacity: int.parse(
+                                                          totalSeats
+                                                          // _capcityVehicleEditingController!
+                                                          //     .text
+                                                          ),
+                                                      urlImage:
+                                                          widget.isAddNew ==
+                                                                  true
+                                                              ? urlImage
+                                                              : widget.vehicle
+                                                                  .urlImage,
+                                                      location:
+                                                          currentLocation);
+
+                                                  final _appCircleprogressbar =
+                                                      AppCircleprogressbar();
+                                                  // ignore: use_build_context_synchronously
+                                                  _appCircleprogressbar
+                                                      .buildCirclerprogessbar(
+                                                          context);
+
+                                                  late bool isSuccessed;
+                                                  isSuccessed =
+                                                      await _uploadController
+                                                          .updateVehicle(
+                                                              newVehicle);
+                                                  //       .updateVehicle(newVehicle);
+                                                  // if (widget.isAddNew == false) {
+                                                  //   isSuccessed = await _uploadController
+                                                  //       .updateVehicle(newVehicle);
+                                                  // } else {
+                                                  //   isSuccessed = await _uploadController
+                                                  //       .updateVehicle(newVehicle);
+                                                  // }
+
+                                                  Navigator.of(context).pop();
+                                                  if (isSuccessed == true) {
+                                                    Get.offAll(
+                                                        ScaffoldWithNavigationRail(
+                                                      selectedIndex: 1,
+                                                    ));
+                                                    _appSnackbar.buildSnackbar(
+                                                        context,
+                                                        'Successfully!');
+                                                  } else {
+                                                    _appSnackbar.buildSnackbar(
+                                                        context, 'Update fail');
+                                                  }
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.greenAccent,
+                                                    foregroundColor:
+                                                        Colors.white),
+                                                icon: const Icon(
+                                                  Icons.save,
+                                                  size: 25,
+                                                ),
+                                                label: const Text(
+                                                  'Save',
+                                                  style: TextStyle(
+                                                      fontFamily: 'Roboto bold',
+                                                      fontSize: 18),
+                                                )),
+                                            const SizedBox(
+                                              width: 20,
+                                            ),
+                                            widget.isAddNew
+                                                ? const SizedBox()
+                                                : ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      bool shouldVerify =
+                                                          await _cupertinoDialog
+                                                              .createCupertinoDialog(
+                                                                  AppColor
+                                                                      .mainColor,
+                                                                  'Delete',
+                                                                  'Delete this vehicle?',
+                                                                  context);
+
+                                                      if (shouldVerify) {
+                                                        try {
+                                                          final _appCircleprogressbar =
+                                                              AppCircleprogressbar();
+                                                          _appCircleprogressbar
+                                                              .buildCirclerprogessbar(
+                                                                  context);
+
+                                                          final isRemove =
+                                                              await _removeController
+                                                                  .removeAVehicle(widget
+                                                                      .vehicle
+                                                                      .idVehicle);
+
+                                                          Navigator.of(context)
+                                                              .pop();
+
+                                                          if (isRemove) {
+                                                            _appSnackbar
+                                                                .buildSnackbar(
+                                                                    context,
+                                                                    'Delete Successfully!');
+
+                                                            Get.offAll(
+                                                                ScaffoldWithNavigationRail(
+                                                                    selectedIndex:
+                                                                        1));
+                                                          } else {
+                                                            _appSnackbar
+                                                                .buildSnackbar(
+                                                                    context,
+                                                                    'Delete fail! Exist active route.');
+                                                          }
+                                                        } catch (e) {
+                                                          _appSnackbar
+                                                              .buildSnackbar(
+                                                                  context,
+                                                                  'Delete fail! Exist active route.');
+                                                        }
+                                                      }
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .redAccent,
+                                                            foregroundColor:
+                                                                Colors.white),
+                                                    icon: const Icon(
+                                                      Icons.delete,
+                                                      size: 25,
+                                                    ),
+                                                    label: const Text(
+                                                      'Delete',
+                                                      style: TextStyle(
+                                                          fontFamily:
+                                                              'Roboto bold',
+                                                          fontSize: 18),
+                                                    )),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ))
                             ],
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ))

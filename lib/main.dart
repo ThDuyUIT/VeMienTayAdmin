@@ -1,11 +1,14 @@
+import 'package:booking_transition_admin/feature/presentation/Authentication/login.dart';
 import 'package:booking_transition_admin/feature/presentation/Dashboard/dashboard_page.dart';
 import 'package:booking_transition_admin/feature/presentation/scaffold_navigationrail.dart';
 import 'package:booking_transition_admin/router/app_pages.dart';
 import 'package:booking_transition_admin/router/app_routes.dart';
 import 'package:booking_transition_admin/untils/colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:url_strategy/url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,15 +24,35 @@ void main() async {
     storageBucket: 'vemientay-6c26c.appspot.com',
     // measurementId: 'G-ZFSTZK4J9V',
   ));
-  runApp(const MyApp());
+  setPathUrlStrategy();
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  static late double widthScreen;
+  MyApp({super.key});
+  //static late bool isLogin;
+
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+// Check if a user is currently signed in
+  User? user;
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    //if (LoginPage.isLogin) {
+    try {
+      user = auth.currentUser!;
+    } catch (e) {
+      user = null;
+    }
+
+    //print(user?.uid);
+    // }
+
+    widthScreen = MediaQuery.of(context).size.width;
+    print(widthScreen);
     return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -37,10 +60,16 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: ScaffoldWithNavigationRail(
-        selectedIndex: 0,
-      ),
-      // initialRoute: '/',
+      home:
+          //LoginPage()
+          user?.uid != 'Fv4mfoOUoTQnx9YCkYRhad63WhB2' || user == null
+              ? LoginPage()
+              : ScaffoldWithNavigationRail(
+                  selectedIndex: 0,
+                ),
+      // initialRoute: user?.uid != 'Fv4mfoOUoTQnx9YCkYRhad63WhB2' || user == null
+      //     ? AppPages.AUTHENTICATION
+      //     : AppPages.INITIAL,
       // getPages: AppPages.routes,
     );
   }

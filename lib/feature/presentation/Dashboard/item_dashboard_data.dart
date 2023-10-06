@@ -1,5 +1,6 @@
 class DashboardRowData {
   late int number;
+  late String idRoute;
   late String idVehicle;
   late String from;
   late String where;

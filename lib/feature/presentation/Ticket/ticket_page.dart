@@ -15,8 +15,10 @@ import 'package:booking_transition_admin/untils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class TicketPage extends StatefulWidget {
@@ -91,7 +93,7 @@ class StateTicketPage extends State<TicketPage> {
                           formatedDate = await showDatePicker(
                               context: context,
                               initialDate: DateTime.now(),
-                              firstDate: DateTime.now(),
+                              firstDate: DateTime(2023),
                               lastDate: DateTime(2030));
 
                           if (formatedDate != null) {
@@ -207,95 +209,178 @@ class StateTicketPage extends State<TicketPage> {
                   label: Text('Add', style: TextStyle(fontSize: 18))),
             ],
           ),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.only(top: 10),
-            child: DataTable(
-                dataRowMaxHeight: 0,
-                dataRowMinHeight: 0,
-                headingRowColor: MaterialStateProperty.resolveWith(
-                    (states) => AppColor.mainColor),
-                columns: const [
-                  DataColumn(
-                      label: Text(
-                    'Number',
-                    style: TextStyle(
-                        fontFamily: 'Roboto bold', color: Colors.white),
-                  )),
-                  DataColumn(
-                      label: Text('Name',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('Phone',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('From',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('Where',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('Prices',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('Departure Date',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('Departure Time',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('Status Payment',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                  DataColumn(
-                      label: Text('More',
-                          style: TextStyle(
-                              //fontFamily: 'Roboto bold',
-                              color: Colors.white))),
-                ],
-                rows: const [
-                  DataRow(cells: [
-                    DataCell(Text('1')),
-                    DataCell(Text('Nguyen Thanh Duy')),
-                    DataCell(Text('0828767179')),
-                    DataCell(Text('Vinh Long')),
-                    DataCell(Text('Hau Giang')),
-                    DataCell(Text('120000')),
-                    DataCell(Text('26/8/2023')),
-                    DataCell(Text('03:00')),
-                    DataCell(Text('Unpaid')),
-                    DataCell(Text('More'))
-                  ])
-                ]),
-          ),
+          // Container(
+          //   width: double.infinity,
+          //   padding: EdgeInsets.only(top: 10),
+          //   child: FittedBox(
+          //     child: DataTable(
+          //         // dataRowMaxHeight: 0,
+          //         // dataRowMinHeight: 0,
+          //         headingRowColor: MaterialStateProperty.resolveWith(
+          //             (states) => AppColor.mainColor),
+          //         columns: const [
+          //           DataColumn(
+          //               label: Text(
+          //             'Number',
+          //             style: TextStyle(
+          //                 fontFamily: 'Roboto bold', color: Colors.white),
+          //           )),
+          //           DataColumn(
+          //               label: Text('Name',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('Phone',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('From',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('Where',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('Prices',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('Departure Date',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('Departure Time',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('Status Payment',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //           DataColumn(
+          //               label: Text('More',
+          //                   style: TextStyle(
+          //                       //fontFamily: 'Roboto bold',
+          //                       color: Colors.white))),
+          //         ],
+          //         rows: const [
+          //           DataRow(cells: [
+          //             DataCell(Text('Number')),
+          //             DataCell(Text('Name')),
+          //             DataCell(Text('Phone')),
+          //             DataCell(Text('From')),
+          //             DataCell(Text('Where')),
+          //             DataCell(Text('Prices')),
+          //             DataCell(Text('Departure Date')),
+          //             DataCell(Text('Departure Time')),
+          //             DataCell(Text('Status Payment')),
+          //             DataCell(Text('More'))
+          //           ])
+          //         ]),
+          //   ),
+          // ),
+
+          //header datatable
           FutureBuilder(
               future: _loadingController.setTicketData(
                   _dateEditingController.text, _phoneEditingController.text),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: Container(
-                      padding: EdgeInsets.only(top: 20),
-                      child: CircularProgressIndicator(
-                        color: AppColor.mainColor,
-                      ),
+                  return Container(
+                    padding: EdgeInsets.only(top: 20),
+                    width: double.infinity,
+                    child: FittedBox(
+                      child: DataTable(
+                          dataRowMaxHeight: 0,
+                          dataRowMinHeight: 0,
+                          headingRowColor: MaterialStateProperty.resolveWith(
+                              (states) => AppColor.mainColor),
+                          columns: const [
+                            DataColumn(
+                                label: Text(
+                              'Number',
+                              style: TextStyle(
+                                  fontFamily: 'Roboto bold',
+                                  color: Colors.white),
+                            )),
+                            DataColumn(
+                                label: Text('Name',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('Phone',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('From',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('Where',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('Prices',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('Time',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('Status Ticket',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('Status Payment',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                            DataColumn(
+                                label: Text('More',
+                                    style: TextStyle(
+                                        //fontFamily: 'Roboto bold',
+                                        color: Colors.white))),
+                          ],
+                          rows: const [
+                            DataRow(cells: [
+                              DataCell(Text('Number')),
+                              DataCell(Text('Name')),
+                              DataCell(Text('Phone')),
+                              DataCell(Text('From')),
+                              DataCell(Text('Where')),
+                              DataCell(Text('Prices')),
+                              DataCell(Text('Time')),
+                              DataCell(Text('Status Ticket')),
+                              DataCell(Text('Status Payment')),
+                              DataCell(Text('More'))
+                            ])
+                          ]),
                     ),
                   );
+                  //),
+                  // Container(
+                  //   padding: EdgeInsets.only(top: 20),
+                  //   child: CircularProgressIndicator(
+                  //     color: AppColor.mainColor,
+                  //   ),
+                  // ),
+                  //);
                 } else if (snapshot.hasError) {
                   return const Center(
                     child: Text(
@@ -307,15 +392,108 @@ class StateTicketPage extends State<TicketPage> {
                   ticketRow = snapshot.data;
                   if (ticketRow.isNotEmpty) {
                     int index = 0;
-                    return Expanded(
-                        child: SingleChildScrollView(
+                    return SingleChildScrollView(
                       child: Container(
+                        padding: EdgeInsets.only(top: 20),
                         width: double.infinity,
+                        child: FittedBox(
+                          child: DataTable(
+                              dataRowMaxHeight: 0,
+                              dataRowMinHeight: 0,
+                              headingRowColor:
+                                  MaterialStateProperty.resolveWith(
+                                      (states) => AppColor.mainColor),
+                              columns: const [
+                                DataColumn(
+                                    label: Text(
+                                  'Number',
+                                  style: TextStyle(
+                                      fontFamily: 'Roboto bold',
+                                      color: Colors.white),
+                                )),
+                                DataColumn(
+                                    label: Text('Name',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Phone',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('From',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Where',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Prices',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Time',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Status Ticket',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Status Payment',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('More',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                              ],
+                              rows: ticketRow.map((e) {
+                                index += 1;
+                                return DataRow(cells: [
+                                  DataCell(Text(index.toString())),
+                                  DataCell(Text(e.name)),
+                                  DataCell(Text(e.phone)),
+                                  DataCell(Text(e.from)),
+                                  DataCell(Text(e.where)),
+                                  DataCell(Text(
+                                    NumberFormat.decimalPattern()
+                                        .format(int.parse(e.prices))
+                                        .toString(),
+                                    style: TextStyle(fontFamily: 'Roboto bold'),
+                                  )),
+                                  //DataCell(Text(e.departureDate)),
+                                  DataCell(Text(e.departureTime)),
+                                  DataCell(Text(e.statusTicket)),
+                                  DataCell(Text(e.statusPayment == '0'
+                                      ? "Unpaid"
+                                      : "Paid")),
+                                  DataCell(Text('More')),
+                                ]);
+                              }).toList()),
+                        ),
+                      ),
+                    );
+                  } else {
+                    //print(snapshot.l)
+                    return Container(
+                      padding: EdgeInsets.only(top: 20),
+                      width: double.infinity,
+                      child: FittedBox(
                         child: DataTable(
-                            // headingRowColor:
-                            //     MaterialStateProperty.resolveWith(
-                            //         (states) => AppColor.mainColor),
-                            headingRowHeight: 0,
+                            dataRowMaxHeight: 0,
+                            dataRowMinHeight: 0,
+                            headingRowColor: MaterialStateProperty.resolveWith(
+                                (states) => AppColor.mainColor),
                             columns: const [
                               DataColumn(
                                   label: Text(
@@ -350,12 +528,12 @@ class StateTicketPage extends State<TicketPage> {
                                           //fontFamily: 'Roboto bold',
                                           color: Colors.white))),
                               DataColumn(
-                                  label: Text('Departure Date',
+                                  label: Text('Time',
                                       style: TextStyle(
                                           //fontFamily: 'Roboto bold',
                                           color: Colors.white))),
                               DataColumn(
-                                  label: Text('Departure Time',
+                                  label: Text('Status Ticket',
                                       style: TextStyle(
                                           //fontFamily: 'Roboto bold',
                                           color: Colors.white))),
@@ -370,72 +548,215 @@ class StateTicketPage extends State<TicketPage> {
                                           //fontFamily: 'Roboto bold',
                                           color: Colors.white))),
                             ],
-                            rows: ticketRow.map((e) {
-                              index += 1;
-                              return DataRow(cells: [
-                                DataCell(Text(index.toString())),
-                                DataCell(Text(e.name)),
-                                DataCell(Text(e.phone)),
-                                DataCell(Text(e.from)),
-                                DataCell(Text(e.where)),
-                                DataCell(Text(e.prices)),
-                                DataCell(Text(e.departureDate)),
-                                DataCell(Text(e.departureTime)),
-                                DataCell(Text(e.statusPayment == '0'
-                                    ? "Unpaid"
-                                    : "Paid")),
-                                DataCell(
-                                  GestureDetector(
-                                    onTap: () async {
-                                      Transitions bookedRoute =
-                                          await _loadingController
-                                              .getTheBookedRoute(e.idRoute);
-                                      Vehicle bookedVehicle =
-                                          await _loadingController
-                                              .getTheBookedVehicle(
-                                                  bookedRoute.idVehicle);
-
-                                      final editSeats = await _loadingController
-                                          .getEditedSeat(e.idTicket);
-
-                                      final detailBookedTicket =
-                                          await _loadingController
-                                              .getDetailId(e.idTicket);
-
-                                      if (bookedVehicle.capacity == 16) {
-                                        StateList16Seats.bookedSeat =
+                            rows: const [
+                              DataRow(cells: [
+                                DataCell(Text('Number')),
+                                DataCell(Text('Name')),
+                                DataCell(Text('Phone')),
+                                DataCell(Text('From')),
+                                DataCell(Text('Where')),
+                                DataCell(Text('Prices')),
+                                DataCell(Text('Time')),
+                                DataCell(Text('Status Ticket')),
+                                DataCell(Text('Status Payment')),
+                                DataCell(Text('More'))
+                              ])
+                            ]),
+                      ),
+                    );
+                    // Container(
+                    //   padding: const EdgeInsets.only(top: 20),
+                    //   child: const Center(
+                    //     child: Text(
+                    //       'Data don\'t exist',
+                    //       style: TextStyle(fontSize: 20),
+                    //     ),
+                    //   ),
+                    // );
+                  }
+                }
+              }),
+          //data row
+          FutureBuilder(
+              future: _loadingController.setTicketData(
+                  _dateEditingController.text, _phoneEditingController.text),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: Container(
+                      padding: EdgeInsets.only(top: 20),
+                      child: CircularProgressIndicator(
+                        color: AppColor.mainColor,
+                      ),
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return const Center(
+                    child: Text(
+                      'Error loading data',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  );
+                } else {
+                  ticketRow = snapshot.data;
+                  if (ticketRow.isNotEmpty) {
+                    int index = 0;
+                    return Expanded(
+                        child: SingleChildScrollView(
+                      child: Container(
+                        width: double.infinity,
+                        child: FittedBox(
+                          child: DataTable(
+                              // headingRowColor:
+                              //     MaterialStateProperty.resolveWith(
+                              //         (states) => AppColor.mainColor),
+                              headingRowHeight: 0,
+                              columns: const [
+                                DataColumn(
+                                    label: Text(
+                                  'Number',
+                                  style: TextStyle(
+                                      fontFamily: 'Roboto bold',
+                                      color: Colors.white),
+                                )),
+                                DataColumn(
+                                    label: Text('Name',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Phone',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('From',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Where',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Prices',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Time',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Status Ticket',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('Status Payment',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                                DataColumn(
+                                    label: Text('More',
+                                        style: TextStyle(
+                                            //fontFamily: 'Roboto bold',
+                                            color: Colors.white))),
+                              ],
+                              rows: ticketRow.map((e) {
+                                index += 1;
+                                return DataRow(cells: [
+                                  DataCell(Text(index.toString())),
+                                  DataCell(Text(e.name)),
+                                  DataCell(Text(e.phone)),
+                                  DataCell(Text(e.from)),
+                                  DataCell(Text(e.where)),
+                                  DataCell(Text(
+                                      NumberFormat.decimalPattern()
+                                          .format(int.parse(e.prices))
+                                          .toString(),
+                                      style: TextStyle(
+                                          fontFamily: 'Roboto bold'))),
+                                  //DataCell(Text(e.departureDate)),
+                                  DataCell(Text(e.departureTime)),
+                                  DataCell(Text(e.statusTicket == '0'
+                                      ? 'Upcomming'
+                                      : e.statusTicket == '1'
+                                          ? 'Completed'
+                                          : 'Cancel')),
+                                  DataCell(Text(e.statusPayment == '0'
+                                      ? "Unpaid"
+                                      : "Paid")),
+                                  DataCell(
+                                    GestureDetector(
+                                      onTap: () async {
+                                        Transitions bookedRoute =
                                             await _loadingController
-                                                .getBookedSeats(e.idRoute);
-                                        for (var seat
-                                            in StateList16Seats.seats) {
-                                          seat.color = AppColor.mainColor;
-                                        }
-                                      } else if (bookedVehicle.capacity == 29) {
-                                        StateList29Seats.bookedSeat =
+                                                .getTheBookedRoute(e.idRoute);
+                                        Vehicle bookedVehicle =
                                             await _loadingController
-                                                .getBookedSeats(e.idRoute);
-                                        for (var seat
-                                            in StateList29Seats.seats) {
-                                          seat.color = AppColor.mainColor;
-                                        }
-                                      }
+                                                .getTheBookedVehicle(
+                                                    bookedRoute.idVehicle);
 
-                                      Get.to(EditTicket(
-                                        ticket: e,
-                                        bookedRoute: bookedRoute,
-                                        bookedvehicle: bookedVehicle,
-                                        editedSeat: editSeats,
-                                        detailBookedTicket: detailBookedTicket,
-                                      ));
-                                    },
-                                    child: Icon(
-                                      Icons.more_horiz_rounded,
-                                      color: AppColor.mainColor,
+                                        List<String> editSeats =
+                                            await _loadingController
+                                                .getEditedSeat(e.idTicket);
+
+                                        List<String> detailBookedTicket =
+                                            await _loadingController
+                                                .getDetailId(e.idTicket);
+
+                                        StateList16Seats.selectedSeatOfTicket =
+                                            editSeats;
+
+                                        StateList29Seats.selectedSeatOfTicket =
+                                            editSeats;
+
+                                        if (bookedVehicle.capacity == 16) {
+                                          StateList16Seats.bookedSeat =
+                                              await _loadingController
+                                                  .getBookedSeats(e.idRoute);
+                                          for (var seat
+                                              in StateList16Seats.seats) {
+                                            seat.color = AppColor.mainColor;
+                                            // detailBookedTicket
+                                            //     .forEach((element) {
+                                            //   if (element == seat.index) {
+                                            //     seat.color = Colors.greenAccent;
+                                            //   }
+                                            // });
+                                          }
+                                        } else if (bookedVehicle.capacity ==
+                                            29) {
+                                          StateList29Seats.bookedSeat =
+                                              await _loadingController
+                                                  .getBookedSeats(e.idRoute);
+                                          for (var seat
+                                              in StateList29Seats.seats) {
+                                            seat.color = AppColor.mainColor;
+                                          }
+                                        }
+
+                                        Get.to(EditTicket(
+                                          ticket: e,
+                                          bookedRoute: bookedRoute,
+                                          bookedvehicle: bookedVehicle,
+                                          editedSeat: editSeats,
+                                          detailBookedTicket:
+                                              detailBookedTicket,
+                                        ));
+                                      },
+                                      child: Icon(
+                                        Icons.more_horiz_rounded,
+                                        color: AppColor.mainColor,
+                                      ),
                                     ),
-                                  ),
-                                )
-                              ]);
-                            }).toList()),
+                                  )
+                                ]);
+                              }).toList()),
+                        ),
                       ),
                     ));
                   } else {

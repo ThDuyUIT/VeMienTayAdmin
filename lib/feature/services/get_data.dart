@@ -76,7 +76,8 @@ class GetData {
             idVehicle: keyVehicle,
             name: valueVehicle['namevehicle'],
             capacity: valueVehicle['capacity'],
-            urlImage: valueVehicle['imgvehicle']);
+            urlImage: valueVehicle['imgvehicle'],
+            location: valueVehicle['location']);
 
         vehicles.add(item);
       }
@@ -84,6 +85,32 @@ class GetData {
 
     return vehicles;
   }
+
+  // static Future fetchVehicleWithLocation(String idCity) async {
+  //   List<Vehicle> vehicles = [];
+
+  //   DatabaseReference vehicleRef = FirebaseDatabase.instance.ref().child('XE');
+  //   DatabaseEvent event = await vehicleRef.once();
+  //   if (event.snapshot.value != null) {
+  //     Map<dynamic, dynamic> vehicleData =
+  //         event.snapshot.value as Map<dynamic, dynamic>;
+  //     for (var vehicleEntry in vehicleData.entries) {
+  //       var keyVehicle = vehicleEntry.key;
+  //       var valueVehicle = vehicleEntry.value;
+  //       if()
+  //       Vehicle item = Vehicle(
+  //           idVehicle: keyVehicle,
+  //           name: valueVehicle['namevehicle'],
+  //           capacity: valueVehicle['capacity'],
+  //           urlImage: valueVehicle['imgvehicle'],
+  //           location: valueVehicle['location']);
+
+  //       vehicles.add(item);
+  //     }
+  //   }
+
+  //   return vehicles;
+  // }
 
   static Future fetchRoute() async {
     List<Transitions> routes = [];
@@ -106,13 +133,14 @@ class GetData {
             departureTime: valueRoute['departuretime'],
             from: valueRoute['startpoint'],
             where: valueRoute['endpoint'],
-            featured: valueRoute['featuredroute']);
+            featured: valueRoute['featuredroute'],
+            statusActive: valueRoute['statusactive']);
 
         routes.add(item);
       }
     }
     //print()
-    return routes;
+    return routes.reversed.toList();
   }
 
   static Future fetchDetailTicket() async {

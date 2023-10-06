@@ -13,5 +13,6 @@ class RouteRowData {
   late String urlImage;
   late String bookedSeat;
   late String featured;
+  late String statusActive;
   late String capacity;
 }
